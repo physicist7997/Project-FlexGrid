@@ -12,7 +12,21 @@
   <div class="brand">⚡ FlexLadder <span>Operator Console · shed watts, not homes</span></div>
   <div class="hdr-right">
     <span id="dsChip" class="chip">dataset…</span>
-    <span class="chip sim">SIMULATION ONLY</span>
+    <div class="simcol">
+      <span class="chip sim">SIMULATION ONLY</span>
+      <div class="simbox" id="simBox">
+        <button type="button" class="simtoggle" id="simToggle" aria-expanded="false" aria-controls="simPanel">⚙ Customize <span class="caret">▾</span></button>
+        <div class="simpanel" id="simPanel">
+          <div class="sl"><label>Homes <b id="vN"></b></label><input id="sN" type="range" min="1000" max="100000" step="1000" value="50000"></div>
+          <div class="sl"><label>Signed up <b id="vE"></b></label><input id="sE" type="range" min="0" max="80" step="5" value="20"></div>
+          <div class="sl"><label>Homes with a battery <b id="vB"></b></label><input id="sB" type="range" min="0" max="15" step="0.5" value="2.5"></div>
+          <div class="sl"><label>Homes with an EV <b id="vV"></b></label><input id="sV" type="range" min="0" max="40" step="1" value="12"></div>
+          <div class="sl"><label>AC homes w/ smart thermostat <b id="vT"></b></label><input id="sT" type="range" min="0" max="90" step="5" value="40"></div>
+          <button type="button" class="btn small primary" id="simGo">🏘 Generate neighborhood</button>
+          <div class="muted">New random synthetic district. Resets failures.</div>
+        </div>
+      </div>
+    </div>
     <a class="btn ghost" href="/simple">Simple demo</a>
     <a class="btn ghost" href="/homeowner" target="_blank">Homeowner app ↗</a>
   </div>
@@ -34,18 +48,6 @@
         <button id="randDisp" class="btn small">🎲 Random dispatched house</button>
       </div>
       <div class="legend" id="legend"></div>
-      <div class="simbox" id="simBox">
-        <button type="button" class="simtoggle" id="simToggle" aria-expanded="false" aria-controls="simPanel">⚙ Simulation <span class="caret">▴</span></button>
-        <div class="simpanel" id="simPanel">
-          <div class="sl"><label>Homes <b id="vN"></b></label><input id="sN" type="range" min="1000" max="100000" step="1000" value="50000"></div>
-          <div class="sl"><label>Signed up <b id="vE"></b></label><input id="sE" type="range" min="0" max="80" step="5" value="20"></div>
-          <div class="sl"><label>Homes with a battery <b id="vB"></b></label><input id="sB" type="range" min="0" max="15" step="0.5" value="2.5"></div>
-          <div class="sl"><label>Homes with an EV <b id="vV"></b></label><input id="sV" type="range" min="0" max="40" step="1" value="12"></div>
-          <div class="sl"><label>AC homes w/ smart thermostat <b id="vT"></b></label><input id="sT" type="range" min="0" max="90" step="5" value="40"></div>
-          <button type="button" class="btn small primary" id="simGo">🏘 Generate neighborhood</button>
-          <div class="muted">New random synthetic district. Resets failures.</div>
-        </div>
-      </div>
     </div>
     <div class="timebar">
       <label>Time <b id="tLabel"></b></label>

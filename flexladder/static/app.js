@@ -362,7 +362,6 @@ function renderTrace() {
 function initSim() {
   const fmt = {sN: f0, sE: v => v + "%", sB: v => v + "%", sV: v => v + "%", sT: v => v + "%"}, lab = {sN: "vN", sE: "vE", sB: "vB", sV: "vV", sT: "vT"};
   Object.keys(fmt).forEach(s => { const upd = () => $("#" + lab[s]).textContent = fmt[s](+$("#" + s).value); $("#" + s).oninput = upd; upd(); });
-  L.DomEvent.disableClickPropagation($("#simBox")); L.DomEvent.disableScrollPropagation($("#simBox"));
   $("#simToggle").onclick = () => {
     const open = $("#simBox").classList.toggle("open"); $("#simToggle").setAttribute("aria-expanded", open);
   };
