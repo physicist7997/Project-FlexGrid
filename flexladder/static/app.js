@@ -9,7 +9,7 @@ const HOME_COL = {dispatched:"#1b8a4b", enrolled:"#3b7ddd", silent:"#e09a17", no
 const SITE_ICON = {hospital:"🏥", fire:"🚒", water:"💧", cooling:"❄️", senior:"🧓"};
 
 let P = null, GEO = null, TPL = null, K = 0, VIEW = "flex", LEVEL = {type: "district"};
-let map, fdLayer, nbLayer, homeLayer, siteLayer, chart, canvasR, openPopup = null;
+let map, fdLayer, nbLayer, homeLayer, siteLayer, chart, openPopup = null;
 let decisions = [], dbFilters = new Set(), activeTpl = null;
 
 const f1 = (x, d = 1) => Number(x).toLocaleString(undefined, {minimumFractionDigits: d, maximumFractionDigits: d});
@@ -51,7 +51,6 @@ function initMap() {
   // CARTO basemaps now require an API key; OSM standard tiles are keyless (light use, attribution required)
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap contributors", maxZoom: 19, className: "basemap"}).addTo(map);
-  canvasR = L.canvas({padding: 0.5});
   fdLayer = L.layerGroup().addTo(map); nbLayer = L.layerGroup().addTo(map);
   homeLayer = L.layerGroup().addTo(map); siteLayer = L.layerGroup().addTo(map);
   $("#backBtn").onclick = () => {
@@ -135,7 +134,7 @@ async function loadHomes(fid) {
   homeLayer.clearLayers();
   r.homes.forEach(h => {
     const st = open ? "dark" : (VIEW === "old" && h.s === "dispatched" ? "enrolled" : h.s);
-    const c = L.circleMarker([h.lat, h.lon], {renderer: canvasR, radius: h.s === "dispatched" && !open ? 5 : 3.6,
+    const c = L.circleMarker([h.lat, h.lon], {radius: h.s === "dispatched" && !open ? 5 : 3.6,
       color: h.m ? "#d23c3c" : "#ffffff", weight: h.m ? 2 : .6, fillColor: HOME_COL[st], fillOpacity: .95});
     c.on("click", () => openHome(h.id));
     c.addTo(homeLayer);
