@@ -22,7 +22,7 @@ uvicorn server:app --reload --port 8000
 # /homeowner  homeowner app (edits flow into the operator plan)
 pytest -q     # 10 tests must stay green
 ```
-Leaflet + Chart.js are vendored in `static/vendor/` (offline-safe). Only CARTO map tiles need internet.
+Leaflet + Chart.js are vendored in `static/vendor/` (offline-safe). Only the OpenStreetMap basemap tiles need internet (CARTO now requires an API key).
 
 ## Files
 - `config.py` — all assumptions (with source notes) + `TEMPLATES` (realistic request types) + `DEFAULT_TEMPLATE`.

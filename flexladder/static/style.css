@@ -23,6 +23,7 @@ main{display:grid;grid-template-columns:1fr 440px;gap:12px;padding:0 18px 18px}
 .left{display:flex;flex-direction:column;gap:8px;min-width:0}
 #mapWrap{position:relative;height:540px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
 #map{height:100%;background:#e9ecef}
+.basemap{filter:grayscale(.85) brightness(1.06) contrast(.9)}
 .crumbs{position:absolute;top:10px;left:50px;max-width:calc(100% - 520px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:500;background:#fff;border-radius:8px;padding:4px 8px;box-shadow:0 1px 4px rgba(0,0,0,.15);display:flex;gap:8px;align-items:center}
 .maptools{position:absolute;top:10px;right:10px;z-index:500;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .legend{position:absolute;bottom:12px;left:12px;z-index:500;background:#fff;border-radius:8px;padding:6px 10px;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.15)}

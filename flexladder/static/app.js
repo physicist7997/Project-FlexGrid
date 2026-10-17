@@ -48,8 +48,9 @@ function nbState(nb) {
 /* ---------------------------------------------------------------- map */
 function initMap() {
   map = L.map("map", {zoomControl: true, preferCanvas: true}).setView([34.225, -118.49], 12);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-    attribution: "&copy; OpenStreetMap contributors &copy; CARTO", subdomains: "abcd", maxZoom: 19}).addTo(map);
+  // CARTO basemaps now require an API key; OSM standard tiles are keyless (light use, attribution required)
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors", maxZoom: 19, className: "basemap"}).addTo(map);
   canvasR = L.canvas({padding: 0.5});
   fdLayer = L.layerGroup().addTo(map); nbLayer = L.layerGroup().addTo(map);
   homeLayer = L.layerGroup().addTo(map); siteLayer = L.layerGroup().addTo(map);
