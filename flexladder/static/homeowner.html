@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlexLadder · My Home</title>
+<style>
+  :root{--g:#1b8a4b;--ink:#16201b;--mut:#6b766f;--line:#e3e7e3}
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;background:#eef1ee;color:var(--ink);display:flex;gap:28px;justify-content:center;padding:24px;flex-wrap:wrap}
+  .phone{width:380px;background:#fff;border-radius:34px;border:10px solid #16201b;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+  .top{background:var(--g);color:#fff;padding:18px 18px 14px}
+  .top h1{margin:0;font-size:18px}.top div{opacity:.85;font-size:12px}
+  .body{padding:12px 16px 18px;max-height:720px;overflow:auto}
+  .card{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:10px}
+  .card h3{margin:0 0 6px;font-size:14px;display:flex;justify-content:space-between;align-items:center}
+  .q{font-size:12px;color:var(--mut);margin:4px 0}
+  select,input[type=number]{padding:5px 7px;border:1px solid var(--line);border-radius:8px;font:inherit}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .sw{position:relative;width:40px;height:22px;display:inline-block}.sw input{display:none}
+  .sw span{position:absolute;inset:0;background:#ccc;border-radius:99px;transition:.2s;cursor:pointer}
+  .sw span:before{content:"";position:absolute;width:18px;height:18px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.2s}
+  .sw input:checked+span{background:var(--g)}.sw input:checked+span:before{transform:translateX(18px)}
+  .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg button{flex:1;border:0;background:#fff;padding:6px;font-size:12px;cursor:pointer}.seg button.on{background:var(--g);color:#fff}
+  .save{width:100%;background:var(--g);color:#fff;border:0;border-radius:12px;padding:11px;font-weight:700;font-size:15px;cursor:pointer}
+  .money{font-size:26px;font-weight:800;color:var(--g)}
+  .sms{background:#e9e9eb;border-radius:16px 16px 16px 4px;padding:9px 12px;font-size:13px;margin:6px 0}
+  .side{width:360px}
+  .side .card{background:#fff}
+  .muted{color:var(--mut);font-size:12px}
+  .prot{background:#fdeaea;color:#8a1f1f;border-radius:10px;padding:8px;font-size:12px}
+  a{color:var(--g)}
+  .ok{color:var(--g);font-weight:700}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="top"><h1>⚡ FlexLadder · My Home</h1><div id="addr">loading…</div></div>
+  <div class="body" id="app"></div>
+</div>
+<div class="side">
+  <div class="card">
+    <b>Demo controls</b>
+    <div class="row" style="margin-top:6px"><input id="hid" placeholder="Home ID e.g. H00268" style="flex:1;padding:6px;border:1px solid #ddd;border-radius:8px">
+      <button onclick="load(document.getElementById('hid').value)">Open</button></div>
+    <div class="row" style="margin-top:6px">
+      <button onclick="rand(false)">🎲 Random home</button><button onclick="rand(true)">🎲 Random dispatched home</button></div>
+    <p class="muted">Changes saved here flow straight into the operator console: the plan is recomputed with this homeowner's new limits.</p>
+    <a href="/" target="_blank">Open operator console ↗</a>
+  </div>
+  <div class="card"><b>What the operator sees for this home right now</b><div id="opView" class="muted"></div></div>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+let H = null, PLAN = null;
+const hr = h => { const H_ = Math.floor(h), M = Math.round((h - H_) * 60); return `${(H_ - 1) % 12 + 1}:${String(M).padStart(2,"0")} ${H_ < 12 ? "AM" : "PM"}`; };
+async function api(p, o) { const r = await fetch(p, o); if (!r.ok) throw new Error(await r.text()); return r.json(); }
+function sw(id, on, dis) { return `<label class="sw"><input type="checkbox" id="${id}" ${on ? "checked" : ""} ${dis ? "disabled" : ""}><span></span></label>`; }
+function opt(vals, cur, fmt = x => x) { return vals.map(v => `<option value="${v}" ${String(v) === String(cur) ? "selected" : ""}>${fmt(v)}</option>`).join(""); }
+
+async function rand(d) { const r = await api(`/api/random_home?dispatched=${d}`); load(r.id); }
+async function load(id) {
+  if (!id) return;
+  try { H = await api(`/api/homeowner/${id}`); } catch (e) { alert("Home not found"); return; }
+  PLAN = await api("/api/plan");
+  history.replaceState(null, "", `/homeowner?home=${H.home_id}`);
+  $("#hid").value = H.home_id; render();
+}
+function smsText() {
+  const req = PLAN.request, end = req.start_hour + req.duration_h;
+  const acts = H.actions.filter(a => a.status === "DISPATCHED").map(a => a.action);
+  const parts = [];
+  if (acts.some(a => a.startsWith("Pause EV"))) parts.push(`pause your EV charging (still ${H.ev_min_charge_pct}% by ${hr(H.ev_depart_hour)})`);
+  if (acts.some(a => a.startsWith("Thermostat"))) parts.push(`raise your AC a couple of degrees (never above ${H.comfort_max_f}°F)`);
+  if (acts.some(a => a.startsWith("Partner battery"))) parts.push(`use your battery (never below your ${H.battery_reserve_pct}% backup reserve)`);
+  if (acts.some(a => a.startsWith("Delay water"))) parts.push("delay your water heater up to 1 hour");
+  if (acts.some(a => a.startsWith("Pause pool"))) parts.push("pause your pool pump");
+  const what = parts.length ? parts.join(", ") : "not need anything from your home this time";
+  if (H.language === "Spanish")
+    return `FlexLadder: Alta demanda eléctrica hoy ${hr(req.start_hour)}–${hr(end)}. Vamos a ${parts.length ? "ajustar algunos aparatos dentro de sus límites" : "no necesitar nada de su casa"}. Su refrigerador y equipo médico nunca se tocan. Responda NO para omitir.`;
+  return `FlexLadder: High grid demand ${hr(req.start_hour)}–${hr(end)} today. We'll ${what}. Fridge, lights${H.medical ? ", medical equipment and cooling" : ""} are never touched. Reply STOP to skip this event.`;
+}
+function render() {
+  $("#addr").textContent = `${H.address} · ${H.neighborhood}`;
+  const D = PLAN.request.duration_h, HRS = {"Pause EV charging": D, "Partner battery discharge": D,
+    "Delay water heater": Math.min(D, 1), "Pause pool pump": Math.min(D, 2), "Thermostat nudge (+°F)": D * 0.6};
+  const relief = H.relief_kw;
+  const kwh = H.actions.filter(a => a.status === "DISPATCHED").reduce((t, a) => t + a.kw * (HRS[a.action] || D), 0), earn = kwh * 1.0;
+  let html = `<div class="card"><h3>Flex Rewards ${sw("enrolled", H.enrolled)}</h3>
+    <div class="q">Help your neighborhood avoid blackouts and earn bill credits. You stay in control and can skip any event.</div></div>`;
+  if (H.medical) html += `<div class="prot">⚕ ${H.medical_device} registered. Your cooling and medical equipment are <b>always protected</b>.</div><br>`;
+  if (H.ev) html += `<div class="card"><h3>🚗 ${H.ev_model} ${sw("enroll_ev", H.enroll_ev)}</h3>
+    <div class="q">When do you need to leave, and how much charge do you need?</div>
+    <div class="row">Ready by <select id="ev_depart_hour">${opt([5,5.5,6,6.5,7,7.5,8,8.5,9,10], H.ev_depart_hour, hr)}</select>
+    with at least <select id="ev_min_charge_pct">${opt([50,60,70,80,90,100], H.ev_min_charge_pct, x => x + "%")}</select></div></div>`;
+  if (H.tstat_brand !== "none") html += `<div class="card"><h3>🌡 ${H.tstat_brand} thermostat ${sw("enroll_thermostat", H.enroll_thermostat, H.medical)}</h3>
+    <div class="q">What's the warmest you're comfortable with during an event? (currently set to ${H.setpoint_f}°F)</div>
+    <div class="row">Never above <select id="comfort_max_f">${opt([...Array(8)].map((_, i) => H.setpoint_f + i), H.comfort_max_f, x => x + "°F")}</select>
+    <span class="muted">We pre-cool first.</span></div></div>`;
+  if (H.battery) html += `<div class="card"><h3>🔋 Home battery ${sw("battery_participates", H.battery_participates)}</h3>
+    <div class="q">${H.battery_kwh} kWh, managed by your battery provider. What backup reserve must always remain?</div>
+    <div class="seg" id="reserveSeg">${[20,40,60].map(v => `<button data-v="${v}" class="${v == H.battery_reserve_pct ? "on" : ""}">${v}%</button>`).join("")}</div></div>`;
+  if (H.wh_kw > 0) html += `<div class="card"><h3>🚿 Water heater ${sw("enroll_water_heater", H.enroll_water_heater)}</h3><div class="q">Delay heating up to 1 hour. Your tank stays hot.</div></div>`;
+  if (H.pool_pump) html += `<div class="card"><h3>🏊 Pool pump ${sw("enroll_pool", H.enroll_pool)}</h3><div class="q">Pause filtration up to 2 hours; it finishes later.</div></div>`;
+  html += `<div class="card"><h3>Preference</h3><div class="seg" id="modeSeg">${["Max savings","Balanced","Max comfort"].map(m => `<button data-v="${m}" class="${m === H.mode ? "on" : ""}">${m}</button>`).join("")}</div>
+    <div class="q" style="margin-top:8px">Never touch:
+      <label><input type="checkbox" id="nt_t" ${H.never_touch.includes("Thermostat") ? "checked" : ""}> Thermostat</label>
+      <label><input type="checkbox" id="nt_e" ${H.never_touch.includes("EV") ? "checked" : ""}> EV</label></div>
+    <div class="row">Language <select id="language">${opt(["English","Spanish","Armenian","Korean","Tagalog","Chinese","Persian"], H.language)}</select>
+      Alerts <select id="notify">${opt(["SMS","Email"], H.notify)}</select></div></div>`;
+  html += `<div class="card"><h3>Tonight's event</h3><div class="sms">${smsText()}</div>
+    <div class="muted">Your expected contribution: <b>${relief} kW</b> now, about <b>${kwh.toFixed(1)} kWh</b> over the event (each device only within your limits)</div>
+    <div class="money">≈ $${earn.toFixed(2)}</div><div class="muted">Illustrative at $1/kWh. Actual rates are set by your program and paid only for verified participation.</div></div>`;
+  html += `<button class="save" id="save">Save my settings</button><div id="saved" class="muted" style="text-align:center;margin-top:6px"></div>`;
+  $("#app").innerHTML = html;
+  document.querySelectorAll("#reserveSeg button,#modeSeg button").forEach(b => b.onclick = () => {
+    b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); });
+  $("#save").onclick = save;
+  $("#opView").innerHTML = `<p>Status: <b>${H.status.replace("_", " ")}</b> · giving <b>${H.relief_kw} kW</b> at ${hr(PLAN.request.start_hour)}</p>`
+    + H.actions.map(a => `<div>${a.action}: <b>${a.status}</b>${a.kw ? " · " + a.kw + " kW" : ""}${a.reason ? " — " + a.reason : ""}</div>`).join("");
+}
+async function save() {
+  const v = id => $("#" + id), body = {enrolled: v("enrolled").checked, mode: document.querySelector("#modeSeg .on").dataset.v,
+    language: v("language").value, notify: v("notify").value,
+    never_touch: [v("nt_t").checked && "Thermostat", v("nt_e").checked && "EV"].filter(Boolean).join(", ")};
+  if (v("enroll_ev")) { body.enroll_ev = v("enroll_ev").checked; body.ev_depart_hour = +v("ev_depart_hour").value; body.ev_min_charge_pct = +v("ev_min_charge_pct").value; }
+  if (v("enroll_thermostat")) { body.enroll_thermostat = v("enroll_thermostat").checked; body.comfort_max_f = +v("comfort_max_f").value; }
+  if (v("battery_participates")) { body.battery_participates = v("battery_participates").checked; body.battery_reserve_pct = +document.querySelector("#reserveSeg .on").dataset.v; }
+  if (v("enroll_water_heater")) body.enroll_water_heater = v("enroll_water_heater").checked;
+  if (v("enroll_pool")) body.enroll_pool = v("enroll_pool").checked;
+  H = await api(`/api/homeowner/${H.home_id}`, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+  PLAN = await api("/api/plan"); render();
+  $("#saved").innerHTML = `<span class="ok">✓ Saved.</span> The operator's plan was recomputed with your limits.`;
+}
+const qp = new URLSearchParams(location.search).get("home");
+qp ? load(qp) : rand(true);
+</script>
+</body>
+</html>
