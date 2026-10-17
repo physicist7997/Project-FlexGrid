@@ -267,9 +267,12 @@ def home(home_id: str, k: int = 0):
 
 
 @app.get("/api/random_home")
-def random_home(neighborhood: str | None = None, feeder: str | None = None, dispatched: bool = False, k: int = 0):
+def random_home(neighborhood: str | None = None, feeder: str | None = None, dispatched: bool = False, k: int = 0,
+                enrolled: bool | None = None):
     h = S["d"]["homes"]
     m = pd.Series(True, index=h.index)
+    if enrolled is not None:
+        m &= h["enrolled"] == enrolled
     if neighborhood:
         m &= h["neighborhood"] == neighborhood
     if feeder:

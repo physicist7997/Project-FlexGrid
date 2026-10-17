@@ -29,7 +29,7 @@
   .big{display:block;width:100%;margin-top:16px;padding:22px;font-size:24px;font-weight:800;letter-spacing:.02em;border:0;border-radius:16px;color:#fff;cursor:pointer;
        background:linear-gradient(135deg,#d0382f,#e86a1c);box-shadow:0 6px 18px rgba(208,56,47,.35)}
   .big:disabled{opacity:.6;cursor:wait}
-  .hidden{display:none}
+  .hidden{display:none!important}
   .timeline{list-style:none;padding:0;margin:0}
   .timeline li{display:grid;grid-template-columns:86px 40px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line);opacity:0;transform:translateY(6px);transition:.35s}
   .timeline li.on{opacity:1;transform:none}
@@ -66,15 +66,35 @@
   .note{background:#fff7e8;border:1px solid #f2d9a7;border-radius:10px;padding:10px 14px;margin-top:10px}
   .ok{background:var(--g2);border:1px solid #b9e2c7;border-radius:10px;padding:10px 14px;margin-top:10px;font-weight:600}
   .warn{background:#fdecea;border:1px solid #f3c1bb;border-radius:10px;padding:10px 14px;margin-top:10px;font-weight:600}
+  .nav{display:flex;gap:8px;flex-wrap:wrap}
+  .join{margin-top:16px;border-top:1px dashed var(--line);padding-top:14px}
+  .joinHead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .joinHead a{text-decoration:none;color:var(--ink);font-size:14px;padding:7px 12px}
+  .joinSteps{list-style:none;counter-reset:j;padding:0;margin:10px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+  .joinSteps li{counter-increment:j;background:#f7f9f7;border:1px solid var(--line);border-radius:10px;padding:8px 10px 8px 38px;font-size:13px;color:var(--mut);position:relative}
+  .joinSteps li:before{content:counter(j);position:absolute;left:10px;top:9px;width:20px;height:20px;border-radius:50%;background:var(--g);color:#fff;font-size:12px;font-weight:700;text-align:center;line-height:20px}
+  .joinSteps li b{display:block;color:var(--ink);font-size:14px}
+  .modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+  .mode{text-align:left;font:inherit;background:#fff;border:2px solid var(--line);border-radius:14px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:4px;color:var(--ink)}
+  .mode b{font-size:18px}.mode span:last-child{font-size:14px;color:var(--mut)}
+  .mode.on[data-mode=emergency]{border-color:#d0382f;background:#fff6f4}
+  .mode.on[data-mode=routine]{border-color:#2f6fd0;background:#f3f7ff}
+  .tag{align-self:flex-start;font-size:11px;font-weight:800;letter-spacing:.06em;border-radius:99px;padding:2px 8px;color:#fff}
+  .tag.red{background:#d0382f}.tag.blue{background:#2f6fd0}
+  .story.blue{background:#f3f7ff;border-color:#c4d6f5}
+  .story.blue input{border-color:#2f6fd0;color:#2f6fd0}
+  .hint{font-size:14px;color:var(--mut);margin-top:6px}
+  .big.blue{background:linear-gradient(135deg,#2f6fd0,#2a9fd6);box-shadow:0 6px 18px rgba(47,111,208,.3)}
+  h2 em{font-style:normal}
   footer{text-align:center;color:var(--mut);font-size:14px}
   footer a{color:var(--g);font-weight:700}
-  @media (max-width:760px){.vs{grid-template-columns:1fr}.timeline li{grid-template-columns:64px 30px 1fr}.timeline .mw{grid-column:3}}
+  @media (max-width:760px){.vs,.modes{grid-template-columns:1fr}.timeline li{grid-template-columns:64px 30px 1fr}.timeline .mw{grid-column:3}}
 </style>
 </head>
 <body>
 <header>
   <div><h1>⚡ FlexLadder</h1><p>When the grid is short on power, we dim thousands of homes a little, instead of switching neighborhoods off.</p></div>
-  <a href="/" target="_blank">Open full operator console →</a>
+  <nav class="nav"><a href="/homeowner" target="_blank">Homeowner app</a><a href="/" target="_blank">Operator console →</a></nav>
 </header>
 <div class="wrap">
 
@@ -83,30 +103,57 @@
     <p class="sub">Every home gets its own random devices and the limits its owner set in the FlexLadder app. Simulated data.</p>
     <div class="sliders">
       <div class="sl"><label>Homes <b id="vN"></b></label><input id="sN" type="range" min="1000" max="50000" step="1000" value="20000"></div>
-      <div class="sl"><label>Signed up for FlexLadder <b id="vE"></b></label><input id="sE" type="range" min="0" max="80" step="5" value="20"><small>Opt-in program. Real programs reach ~10–30%.</small></div>
+      <div class="sl"><label>Signed up for FlexLadder <b id="vE"></b></label><input id="sE" type="range" min="0" max="80" step="5" value="20"><small>Opt-in. This is an assumption: try a few values.</small></div>
       <div class="sl"><label>Homes with a battery <b id="vB"></b></label><input id="sB" type="range" min="0" max="15" step="0.5" value="2.5"><small>e.g. Base Power, managed by the battery company</small></div>
       <div class="sl"><label>Homes with an EV <b id="vV"></b></label><input id="sV" type="range" min="0" max="40" step="1" value="12"></div>
       <div class="sl"><label>AC homes with a smart thermostat <b id="vT"></b></label><input id="sT" type="range" min="0" max="90" step="5" value="40"></div>
     </div>
     <button class="btn g" id="gen" style="margin-top:14px">🏘 Generate neighborhood</button>
     <div class="chips" id="chips"></div>
+    <div class="join">
+      <div class="joinHead"><b>How a home signs up</b><a class="btn" href="/homeowner?signup=1" target="_blank">📱 Try the sign-up →</a></div>
+      <ol class="joinSteps">
+        <li><b>Find your home</b>Enter your address. We look up which circuit you're on.</li>
+        <li><b>Connect devices</b>Sign in to your thermostat, EV or battery company. Nothing is installed.</li>
+        <li><b>Set your limits</b>EV ready-by time, warmest temperature, battery backup reserve, never-touch list.</li>
+        <li><b>Get a text first</b>Before every event. Reply SKIP to sit it out.</li>
+      </ol>
+    </div>
   </section>
 
   <section class="step">
-    <h2><span>2</span>The crisis</h2>
-    <div class="story">
+    <h2><span>2</span>One system, two jobs</h2>
+    <p class="sub">The same homes, app and planner do both. The everyday job pays for the system and keeps it tested, so it already works on the worst night.</p>
+    <div class="modes">
+      <button class="mode" data-mode="routine">
+        <span class="tag blue">EVERY SUMMER</span><b>Peak event</b>
+        <span>Hot weekday afternoon, announced the day before. Homes trim a little for a couple of hours and earn bill credits. Nobody's power is ever switched off.</span>
+      </button>
+      <button class="mode on" data-mode="emergency">
+        <span class="tag red">EMERGENCY</span><b>Load-shed backup</b>
+        <span>Local equipment is overloading. The utility needs power cut within 30 minutes or it starts switching neighborhoods off. FlexLadder covers what it can and says plainly what's left.</span>
+      </button>
+    </div>
+    <div class="story" id="storyE">
       It's a <b>104°F September evening</b> in the San Fernando Valley. At <b>6:00 PM</b> a substation is overloading.
       The utility calls: <b>cut <input id="need" type="number" step="0.1" min="0.1"> MW within 30 minutes</b> and hold it for
       <select id="dur"><option value="1">1 hour</option><option value="2">2 hours</option><option value="3" selected>3 hours</option></select>,
       or they start switching whole neighborhoods off.
-      <div style="font-size:14px;color:var(--mut);margin-top:6px" id="needHint"></div>
+      <div class="hint" id="needHint"></div>
+    </div>
+    <div class="story blue hidden" id="storyR">
+      A <b>hot weekday in July</b>. Yesterday afternoon the utility announced a peak event:
+      <b>trim <input id="needR" type="number" step="0.1" min="0.1"> MW from 5:00 PM</b> for
+      <select id="durR"><option value="1">1 hour</option><option value="2" selected>2 hours</option><option value="3">3 hours</option></select>,
+      when power is most expensive. Homes that help earn bill credits.
+      <div class="hint" id="needHintR"></div>
     </div>
     <button class="big" id="go">⚡ REQUEST LOAD-SHED BACKUP</button>
   </section>
 
   <section class="step hidden" id="s3">
     <h2><span>3</span>What FlexLadder did, minute by minute</h2>
-    <p class="sub">Least disruptive first. Each step only uses devices whose owners signed up, that are actually running right now, and only within the owner's limits.</p>
+    <p class="sub">The planner picks the least disruptive devices first; this list is in the order they respond (batteries in about a minute, thermostats in about five). It only uses devices whose owners signed up, that are reporting and running right now, and only within the owner's limits.</p>
     <ul class="timeline" id="timeline"></ul>
     <div class="progress"><div id="pbar"></div><span id="ptxt"></span></div>
     <div id="verdict"></div>
@@ -114,9 +161,21 @@
   </section>
 
   <section class="step hidden" id="s4">
-    <h2><span>4</span>Old way vs FlexLadder</h2>
-    <p class="sub">Same <b id="vsNeed"></b> MW cut, same neighborhood.</p>
-    <div class="vs">
+    <h2><span>4</span><em id="vsTitle">Old way vs FlexLadder</em></h2>
+    <p class="sub">Same <b id="vsNeed"></b> MW, same neighborhood.</p>
+    <div class="vs hidden" id="vsRoutine">
+      <div class="side old">
+        <h3>Without FlexLadder</h3>
+        <div class="n" style="color:#ffb35c" id="rOldN"></div><div>MWh bought at peak prices</div>
+        <p style="font-size:14px;opacity:.85">The utility covers the peak by buying or generating extra power when it costs the most. Homes that could have helped aren't asked, and aren't paid.</p>
+      </div>
+      <div class="side new">
+        <h3>With FlexLadder</h3>
+        <div class="n" id="rNewN"></div><div>MWh trimmed by homes, 0 homes switched off</div>
+        <p style="font-size:14px" id="rNewTxt"></p>
+      </div>
+    </div>
+    <div class="vs" id="vsEmergency">
       <div class="side old">
         <h3>❌ Old way: switch neighborhoods off</h3>
         <div class="n" id="oldN"></div><div>homes completely dark</div>
@@ -158,12 +217,7 @@
     <div id="curveNote"></div>
   </section>
 
-  <section class="step">
-    <h2><span>★</span>On an ordinary Tuesday</h2>
-    <p class="sub" style="margin:0">The same system runs a few times a month in summer to trim expensive peak hours. Homeowners earn bill credits, the utility avoids buying costly peak power, and the whole network is already set up and tested when a real emergency hits.</p>
-  </section>
-
-  <footer>Simulated homes and devices. <a href="/" target="_blank">Open the full operator console</a> for the map, every home, search, more failure modes and the planner trace.</footer>
+  <footer>Simulated homes and devices; all rates and shares are labeled assumptions. <a href="/" target="_blank">Open the full operator console</a> for the map, every home, search, more failure modes and the planner trace.</footer>
 </div>
 
 <script>
@@ -173,7 +227,20 @@ const f1 = (x, d = 1) => Number(x).toLocaleString(undefined, {minimumFractionDig
 async function api(p, o) { const r = await fetch(p, o); if (!r.ok) throw new Error(await r.text()); return r.json(); }
 const post = (p, b) => api(p, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(b || {})});
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-let DS = null, PEAK = 0, P = null, before = null;
+let DS = null, PEAK = 0, P = null, MODE = "emergency";
+
+/* The two jobs. Same engine; only the request differs. */
+const JOBS = {
+  emergency: {label: "Heat-storm substation overload", kind: "emergency", start: 18, deadline: 30, need: "#need", dur: "#dur",
+    story: "#storyE", btn: "⚡ REQUEST LOAD-SHED BACKUP", busy: "⏳ Finding backup…"},
+  routine: {label: "Summer peak event", kind: "routine", start: 17, deadline: 60, need: "#needR", dur: "#durR",
+    story: "#storyR", btn: "☀️ SEND PEAK EVENT", busy: "⏳ Planning event…"},
+};
+const J = () => JOBS[MODE];
+const needMW = () => +$(J().need).value;
+const clock = (min, sec) => { const t = J().start * 60 + min, h = Math.floor(t / 60), m = t % 60;
+  return `${(h - 1) % 12 + 1}:${String(m).padStart(2, "0")}${sec != null ? ":" + String(sec).padStart(2, "0") : ""}`; };
+const hourLabel = h => { const a = J().start + h; return `${(a - 1) % 12 + 1}–${a % 12 + 1} PM`; };
 
 const sliders = [["sN", "vN", v => f0(v)], ["sE", "vE", v => v + "%"], ["sB", "vB", v => v + "%"], ["sV", "vV", v => v + "%"], ["sT", "vT", v => v + "%"]];
 sliders.forEach(([s, v, f]) => { const upd = () => $("#" + v).textContent = f(+$("#" + s).value); $("#" + s).oninput = upd; upd(); });
@@ -186,9 +253,20 @@ function chips(d, peakMW) {
   ].map(x => `<span>${x}</span>`).join("");
 }
 function setNeedDefault() {
-  $("#need").value = Math.max(0.2, Math.round(PEAK * 0.06 * 10) / 10);
+  const v = Math.max(0.2, Math.round(PEAK * 0.06 * 10) / 10);
+  $("#need").value = v; $("#needR").value = v;
   $("#needHint").textContent = `Your neighborhood uses about ${f1(PEAK)} MW right now. Real local emergencies ask for a few percent of that; we suggest ~6%.`;
+  $("#needHintR").textContent = `Peak use here is about ${f1(PEAK)} MW. We suggest ~6% of it; change it to see what happens.`;
 }
+function setMode(m) {
+  MODE = m;
+  document.querySelectorAll(".mode").forEach(b => b.classList.toggle("on", b.dataset.mode === m));
+  $("#storyE").classList.toggle("hidden", m !== "emergency"); $("#storyR").classList.toggle("hidden", m !== "routine");
+  $("#go").textContent = J().btn; $("#go").classList.toggle("blue", m === "routine");
+  ["#s3", "#s4", "#s5"].forEach(s => $(s).classList.add("hidden"));
+}
+document.querySelectorAll(".mode").forEach(b => b.onclick = () => setMode(b.dataset.mode));
+
 async function generate(seed = null) {
   $("#gen").textContent = "⏳ Generating…"; $("#gen").disabled = true;
   P = await post("/api/dataset", {seed, n_homes: +$("#sN").value, enrollment: +$("#sE").value / 100, battery_share: +$("#sB").value / 100,
@@ -198,28 +276,29 @@ async function generate(seed = null) {
 }
 async function setup() {
   await post("/api/failures/reset");
-  P = await post("/api/plan", req(1));   // probe at 6 PM to measure load
+  P = await post("/api/plan", {...req(1), start_hour: 18, kind: "emergency"});   // probe at 6 PM to measure load
   DS = P.dataset; PEAK = Object.values(P.intervals[0].feeder_load).reduce((a, b) => a + b, 0) / 1000;
   chips(DS, PEAK); setNeedDefault();
 }
 function req(mw) {
-  return {label: "Heat-storm substation overload", target_mw: mw, start_hour: 18, duration_h: +$("#dur").value,
-    deadline_min: 30, kind: "emergency", area: []};
+  const j = J();
+  return {label: j.label, target_mw: mw, start_hour: j.start, duration_h: +$(j.dur).value, deadline_min: j.deadline, kind: j.kind, area: []};
 }
 
-/* ---------------- the main event */
+/* ---------------------------------------------------------------- the main event */
 async function run(animated = true, curveText = "") {
-  const I = P.intervals[0], need = I.target_kw / 1000, A = I.by_action, C = I.count_by_action;
-  const mw = a => (A[a] || 0) / 1000, n = a => C[a] || 0;
+  const I = P.intervals[0], need = I.target_kw / 1000, A = I.by_action, C = I.count_by_action, em = MODE === "emergency";
+  const mw = a => (A[a] || 0) / 1000, n = a => C[a] || 0, dur = P.request.duration_h;
   const steps = [
-    ["6:00:00", "📞", `<b>Request received:</b> cut ${f1(need)} MW within 30 min, hold for ${P.request.duration_h} h.`, null],
-    ["6:00:01", "🔎", `<b>Checked ${f0(I.n_enrolled)} signed-up homes.</b> ${f0(I.n_silent_enrolled)} aren't reporting right now, so we don't count on them.`, null],
-    ["6:01", "🔋", `<b>${f0(n("battery"))} home batteries</b> start powering their own homes (asked through the battery company, never below the owner's backup reserve)`, "battery"],
-    ["6:02", "🚗", `<b>${f0(n("ev"))} EV chargers paused</b>: only cars charging right now that will still be ready by their owner's morning time`, "ev"],
-    ["6:05", "🏊", `<b>${f0(n("pool"))} pool pumps paused</b> (filtration finishes later tonight)`, "pool"],
-    ["6:05", "🚿", `<b>${f0(n("water_heater"))} water heaters</b> wait up to an hour (tanks stay hot)`, "water_heater"],
-    ["6:05", "🌡", `<b>${f0(n("thermostat"))} thermostats nudged up 1–3°F</b>, never past the owner's comfort limit`, "thermostat"],
-    ["6:10", "🏥", `<b>${f0(n("tier2_site"))} hospitals & critical sites</b> trimmed pre-approved non-critical cooling; life-safety loads untouched`, "tier2_site"],
+    [clock(0, 0), "📞", em ? `<b>Request received:</b> cut ${f1(need)} MW within 30 min, hold for ${dur} h.`
+                          : `<b>Peak event starts:</b> trim ${f1(need)} MW for ${dur} h. Every signed-up home got a text yesterday and could reply SKIP.`, null],
+    [clock(0, 1), "🔎", `<b>Checked ${f0(I.n_enrolled)} signed-up homes.</b> ${f0(I.n_silent_enrolled)} aren't reporting right now, so we don't count on them.`, null],
+    [clock(1), "🔋", `<b>${f0(n("battery"))} home batteries</b> start powering their own homes (asked through the battery company, never below the owner's backup reserve)`, "battery"],
+    [clock(2), "🚗", `<b>${f0(n("ev"))} EV chargers paused</b>: only cars charging right now that will still be ready by their owner's morning time`, "ev"],
+    [clock(5), "🏊", `<b>${f0(n("pool"))} pool pumps paused</b> (filtration finishes later tonight)`, "pool"],
+    [clock(5), "🚿", `<b>${f0(n("water_heater"))} water heaters</b> wait up to an hour (tanks stay hot)`, "water_heater"],
+    [clock(5), "🌡", `<b>${f0(n("thermostat"))} thermostats nudged up a few degrees</b>, never past the owner's comfort limit`, "thermostat"],
+    [clock(10), "🏥", `<b>${f0(n("tier2_site"))} hospitals & critical sites</b> trimmed pre-approved non-critical cooling; life-safety loads untouched`, "tier2_site"],
   ].filter(s => !s[3] || n(s[3]) > 0);
   $("#s3").classList.remove("hidden");
   const tl = $("#timeline"); tl.innerHTML = ""; let cum = 0;
@@ -233,13 +312,20 @@ async function run(animated = true, curveText = "") {
   }
   const short = I.short_kw / 1000, m = Object.fromEntries(P.feeder_meta.map(f => [f.feeder, f]));
   const end = document.createElement("li");
-  end.innerHTML = short > 0.05
-    ? `<span class="t">6:15</span><span class="i">👤</span><span><b>Still ${f1(short, 2)} MW short.</b> FlexLadder says so plainly. The utility's backup plan switches off <b>${I.flex_open.length} circuit${I.flex_open.length > 1 ? "s" : ""}</b> (${I.flex_open.map(f => m[f].name).join(", ")}, ${f0(I.dark_flex)} homes) instead of ${I.old_open.length}. A human operator approves it.</span><span></span>`
-    : `<span class="t">6:10</span><span class="i">✅</span><span><b>Target met.</b> No neighborhood switched off.</span><span></span>`;
+  if (short <= 0.05)
+    end.innerHTML = `<span class="t">${clock(10)}</span><span class="i">✅</span><span><b>Target met.</b> ${em ? "No neighborhood switched off." : "Nobody's power was switched off."}</span><span></span>`;
+  else if (em)
+    end.innerHTML = `<span class="t">${clock(15)}</span><span class="i">👤</span><span><b>Still ${f1(short, 2)} MW short.</b> FlexLadder says so plainly. The utility's backup plan switches off <b>${I.flex_open.length} circuit${I.flex_open.length > 1 ? "s" : ""}</b> (${I.flex_open.map(f => m[f].name).join(", ")}, ${f0(I.dark_flex)} homes) instead of ${I.old_open.length}. A human operator approves it.</span><span></span>`;
+  else
+    end.innerHTML = `<span class="t">${clock(15)}</span><span class="i">📋</span><span><b>${f1(short, 2)} MW short.</b> Reported to the utility, which buys the rest as it normally would. Routine events never switch anyone off.</span><span></span>`;
   tl.appendChild(end); await sleep(50); end.classList.add("on");
-  $("#verdict").innerHTML = curveText + (short > 0.05
-    ? `<div class="warn">Covered ${Math.round(100 * (1 - short / need))}% with flexibility. ${f0(I.dark_flex)} homes still lose power, versus ${f0(I.dark_old)} the old way.</div>`
-    : `<div class="ok">✅ All ${f1(need)} MW covered by ${f0(I.participants)} homes each giving a little. 0 homes dark, versus ${f0(I.dark_old)} the old way.</div>`);
+  const pct = Math.round(100 * (1 - short / need)), pay = P.summary.payout_usd;
+  $("#verdict").innerHTML = curveText + (em
+    ? (short > 0.05
+      ? `<div class="warn">Covered ${pct}% with flexibility. ${f0(I.dark_flex)} homes still lose power, versus ${f0(I.dark_old)} the old way.</div>`
+      : `<div class="ok">✅ All ${f1(need)} MW covered by ${f0(I.participants)} homes each giving a little. 0 homes dark, versus ${f0(I.dark_old)} the old way.</div>`)
+    : `<div class="ok">${short > 0.05 ? `Covered ${pct}% of the peak event.` : `✅ All ${f1(need)} MW covered by ${f0(I.participants)} homes.`}
+        Homeowners earn about $${f0(pay)} in bill credits over the event (illustrative $1/kWh). 0 homes switched off.</div>`);
   const card = (ic, nn, l, mwv) => `<div class="card"><div style="font-size:24px">${ic}</div><div class="n">${f0(nn)}</div><div class="l">${l}</div><div class="m">${f1(mwv, 2)} MW</div></div>`;
   $("#cards").innerHTML = [card("🔋", n("battery"), "batteries discharged", mw("battery")), card("🚗", n("ev"), "EV chargers paused", mw("ev")),
     card("🌡", n("thermostat"), "thermostats nudged", mw("thermostat")), card("🚿", n("water_heater"), "water heaters delayed", mw("water_heater")),
@@ -252,54 +338,66 @@ function homeGrid(el, total, dark, help) {
   return per;
 }
 function renderVs(I) {
+  const em = MODE === "emergency";
   $("#s4").classList.remove("hidden");
   $("#vsNeed").textContent = f1(I.target_kw / 1000);
+  $("#vsTitle").textContent = em ? "Old way vs FlexLadder" : "Without vs with FlexLadder";
+  $("#vsEmergency").classList.toggle("hidden", !em); $("#vsRoutine").classList.toggle("hidden", em);
+  const avg = I.planned_kw / Math.max(1, I.participants);
+  const like = avg < 1.3 ? "about one microwave" : avg < 2 ? "about one hair dryer" : avg < 3.5 ? "about a space heater" : "less than one EV charger";
+  if (!em) {
+    const needMWh = I.target_kw / 1000 * P.request.duration_h, got = P.summary.mwh;
+    $("#rOldN").textContent = f1(needMWh); $("#rNewN").textContent = f1(got);
+    $("#rNewTxt").innerHTML = `<b>${f0(P.summary.participants)} homes</b> helped, each about <b>${f1(avg, 1)} kW</b> on average (${like}). They earn about
+      <b>$${f0(P.summary.payout_usd)}</b> in bill credits (illustrative $1/kWh)${got < needMWh - 0.05 ? `; the other ${f1(needMWh - got)} MWh is bought as usual` : ""}.`;
+    return;
+  }
   $("#oldN").textContent = f0(I.dark_old); $("#newN").textContent = f0(I.dark_flex);
   const per = homeGrid($("#gOld"), DS.homes, I.dark_old, 0);
   homeGrid($("#gNew"), DS.homes, I.dark_flex, I.participants);
   $("#oldLeg").textContent = `Each square ≈ ${f0(per)} homes · black = no power at all`;
   $("#newLeg").innerHTML = `Each square ≈ ${f0(per)} homes · <span style="color:#1b8a4b;font-weight:700">green</span> = gave a little · black = no power`;
-  const avg = I.planned_kw / Math.max(1, I.participants);
-  const like = avg < 1.3 ? "about one microwave" : avg < 2 ? "about one hair dryer" : avg < 3.5 ? "about a space heater" : "less than one EV charger";
   $("#newTxt").innerHTML = `<b>${f0(I.participants)} homes</b> each gave about <b>${f1(avg, 1)} kW</b> on average (${like}; homes with batteries give more, without noticing) and kept their lights, fridge and Wi-Fi on.`;
 }
 function renderHours() {
+  const em = MODE === "emergency";
   $("#s5").classList.remove("hidden");
   const per = 60 / 15, hrs = [];
   for (let h = 0; h < P.request.duration_h; h++) {
     const ivs = P.intervals.slice(h * per, (h + 1) * per);
-    hrs.push({label: `${6 + h}–${7 + h} PM`, got: Math.min(...ivs.map(i => Math.min(i.planned_kw, i.target_kw))) / 1000,
+    hrs.push({label: hourLabel(h), got: Math.min(...ivs.map(i => Math.min(i.planned_kw, i.target_kw))) / 1000,
       need: ivs[0].target_kw / 1000, dark: Math.max(...ivs.map(i => i.dark_flex)), old: Math.max(...ivs.map(i => i.dark_old))});
   }
   const max = Math.max(...hrs.map(h => h.need)) * 1.1;
   $("#hours").innerHTML = hrs.map(h => `<div class="hour"><div class="barbox">
       <div class="bar need" style="height:${100 * h.need / max}%"></div>
       <div class="bar" style="height:${100 * h.got / max}%"></div></div>
-      <b>${f1(h.got)} / ${f1(h.need)} MW</b><small>${h.label} · ${f0(h.dark)} dark (old way ${f0(h.old)})</small></div>`).join("");
+      <b>${f1(h.got)} / ${f1(h.need)} MW</b><small>${h.label} · ${em ? `${f0(h.dark)} dark (old way ${f0(h.old)})` : "0 switched off"}</small></div>`).join("");
   const last = hrs[hrs.length - 1];
   $("#hourNote").innerHTML = last.got < last.need - 0.05
-    ? `<div class="note">By ${last.label} FlexLadder can still guarantee ${f1(last.got)} MW. It tells the operator now, so they can plan, instead of promising watts it can't deliver. Dashed outline = what's needed.</div>`
+    ? `<div class="note">By ${last.label} FlexLadder can still guarantee ${f1(last.got)} MW. It tells the ${em ? "operator" : "utility"} now, so they can plan, instead of promising watts it can't deliver. Dashed outline = what's needed.</div>`
     : `<div class="ok">Covered for the whole event. Dashed outline = what's needed.</div>`;
 }
 
-/* ---------------- curveballs */
+/* ---------------------------------------------------------------- curveballs: compare the whole event, not just the first interval */
 document.querySelectorAll("[data-f]").forEach(b => b.onclick = async () => {
-  const prev = P.intervals[0];
+  const prev = P.summary;
   P = await post("/api/failure", {type: b.dataset.f});
-  const I = P.intervals[0], what = P.trace[0].detail;
-  const txt = `<div class="note">🌀 <b>Curveball:</b> ${what}. Re-planned in ${P.ms} ms: relief ${f1(prev.planned_kw / 1000, 2)} → ${f1(I.planned_kw / 1000, 2)} MW, homes dark ${f0(prev.dark_flex)} → ${f0(I.dark_flex)}. <a href="#" id="resetCb">Undo curveballs</a></div>`;
+  const s = P.summary, what = P.trace[0].detail;
+  const dark = MODE === "emergency" ? `, most homes dark at once ${f0(prev.peak_dark_flex)} → ${f0(s.peak_dark_flex)}` : "";
+  const txt = `<div class="note">🌀 <b>Curveball:</b> ${what}. Re-planned in ${P.ms} ms. Over the whole event: weakest 15 minutes ${f1(prev.min_mw, 2)} → ${f1(s.min_mw, 2)} MW${dark}. <a href="#" id="resetCb">Undo curveballs</a></div>`;
   $("#curveNote").innerHTML = txt;
   await run(false, txt);
   document.getElementById("s3").scrollIntoView({behavior: "smooth"});
-  document.querySelectorAll("#resetCb").forEach(a => a.onclick = async e => { e.preventDefault(); await post("/api/failures/reset"); P = await post("/api/plan", req(+$("#need").value)); $("#curveNote").innerHTML = ""; run(false); });
+  document.querySelectorAll("#resetCb").forEach(a => a.onclick = async e => { e.preventDefault(); await post("/api/failures/reset"); P = await post("/api/plan", req(needMW())); $("#curveNote").innerHTML = ""; run(false); });
 });
 
 $("#gen").onclick = () => generate(null);
 $("#go").onclick = async () => {
-  $("#go").disabled = true; $("#go").textContent = "⏳ Finding backup…";
+  $("#go").disabled = true; $("#go").textContent = J().busy;
   await post("/api/failures/reset");
-  P = await post("/api/plan", req(+$("#need").value));
-  $("#go").textContent = "⚡ REQUEST LOAD-SHED BACKUP"; $("#go").disabled = false;
+  P = await post("/api/plan", req(needMW()));
+  $("#go").textContent = J().btn; $("#go").disabled = false;
   $("#curveNote").innerHTML = "";
   $("#s3").scrollIntoView({behavior: "smooth"});
   await run(true);
