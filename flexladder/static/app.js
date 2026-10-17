@@ -406,7 +406,7 @@ async function init() {
   });
   $("#tSlider").oninput = e => setK(+e.target.value);
   initMap(); initDb(); initFailures(); initSim();
-  $("#sN").value = Math.min(100000, P.dataset.homes); $("#sE").value = Math.round(P.dataset.enrollment * 100 / 5) * 5; $("#sN").oninput(); $("#sE").oninput();
+  $("#sN").value = Math.min(100000, P.dataset.homes); $("#sE").value = Math.round(P.dataset.enrollment * 100); $("#sN").oninput(); $("#sE").oninput();
   map.fitBounds(L.latLngBounds(GEO.neighborhoods.flatMap(n => n.bounds)), {padding: [10, 10]});
   renderAll();
 }
