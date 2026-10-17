@@ -28,6 +28,18 @@ main{display:grid;grid-template-columns:1fr 440px;gap:12px;padding:0 18px 18px}
 .maptools{position:absolute;top:10px;right:10px;z-index:500;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .legend{position:absolute;bottom:12px;left:12px;z-index:500;background:#fff;border-radius:8px;padding:6px 10px;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.15)}
 .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.simbox{position:absolute;bottom:26px;right:10px;z-index:500;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.simtoggle{border:0;background:#fff;border-radius:99px;padding:5px 11px;font-size:12px;font-weight:600;color:var(--accent);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.simtoggle:hover{background:var(--green2)}
+.simtoggle .caret{display:inline-block;transition:transform .25s}
+.simbox.open .simtoggle .caret{transform:rotate(180deg)}
+.simpanel{width:270px;background:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.25);padding:0 12px;max-height:0;opacity:0;overflow:hidden;pointer-events:none;transition:max-height .3s ease,opacity .2s ease,padding .3s ease}
+.simbox.open .simpanel{max-height:340px;opacity:1;padding:10px 12px;pointer-events:auto}
+.simpanel .sl{margin-bottom:8px}
+.simpanel .sl label{display:flex;justify-content:space-between;font-size:12px;font-weight:600}
+.simpanel .sl label b{color:var(--green)}
+.simpanel input[type=range]{width:100%;margin:2px 0 0}
+.simpanel .btn{width:100%;margin:2px 0 4px}
 .timebar{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 12px}
 .timebar input{flex:1}
 .chartBox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px;height:210px}

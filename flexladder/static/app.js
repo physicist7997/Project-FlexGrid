@@ -358,6 +358,26 @@ function renderTrace() {
   $("#activeFails").innerHTML = P.failures.length ? P.failures.map(f => `<li>${f}</li>`).join("") : "<li class='muted'>None — all systems nominal</li>";
 }
 
+/* ---------------------------------------------------------------- custom simulation (corner widget) */
+function initSim() {
+  const fmt = {sN: f0, sE: v => v + "%", sB: v => v + "%", sV: v => v + "%", sT: v => v + "%"}, lab = {sN: "vN", sE: "vE", sB: "vB", sV: "vV", sT: "vT"};
+  Object.keys(fmt).forEach(s => { const upd = () => $("#" + lab[s]).textContent = fmt[s](+$("#" + s).value); $("#" + s).oninput = upd; upd(); });
+  L.DomEvent.disableClickPropagation($("#simBox")); L.DomEvent.disableScrollPropagation($("#simBox"));
+  $("#simToggle").onclick = () => {
+    const open = $("#simBox").classList.toggle("open"); $("#simToggle").setAttribute("aria-expanded", open);
+  };
+  $("#simGo").onclick = async () => {
+    const b = $("#simGo"); b.textContent = "⏳ Generating…"; b.disabled = true;
+    try {
+      P = await post("/api/dataset", {seed: null, n_homes: +$("#sN").value, enrollment: +$("#sE").value / 100,
+        battery_share: +$("#sB").value / 100, ev_share: +$("#sV").value / 100, thermostat_share: +$("#sT").value / 100});
+      GEO = await api("/api/geo"); K = 0; goDistrict(); renderAll();
+      toast(`New neighborhood: ${f0(P.dataset.homes)} homes · ${f0(P.dataset.enrolled)} signed up · ${f0(P.dataset.batteries)} batteries`);
+    } catch (e) { toast("Could not generate: " + e.message); }
+    b.textContent = "🏘 Generate neighborhood"; b.disabled = false;
+  };
+}
+
 /* ---------------------------------------------------------------- orchestration */
 function setK(k) { K = k; renderAll(false); }
 function renderAll(full = true) {
@@ -386,7 +406,8 @@ async function init() {
     if (b.dataset.tab === "db") searchHomes();
   });
   $("#tSlider").oninput = e => setK(+e.target.value);
-  initMap(); initDb(); initFailures();
+  initMap(); initDb(); initFailures(); initSim();
+  $("#sN").value = Math.min(100000, P.dataset.homes); $("#sE").value = Math.round(P.dataset.enrollment * 100 / 5) * 5; $("#sN").oninput(); $("#sE").oninput();
   map.fitBounds(L.latLngBounds(GEO.neighborhoods.flatMap(n => n.bounds)), {padding: [10, 10]});
   renderAll();
 }
