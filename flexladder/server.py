@@ -23,6 +23,16 @@ from planner import ACTIONS, LABEL, Failures, Request, explain_home, fmt_clock, 
 app = FastAPI(title="FlexGrid")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+
+@app.middleware("http")
+async def no_stale_pages(request, call_next):
+    # Browsers must revalidate pages/JS on every load (cheap 304 via ETag), so a code change
+    # can never pair an old app.js with a new API during the demo.
+    resp = await call_next(request)
+    if not request.url.path.startswith("/api/"):
+        resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
 S: dict = {}
 
 
