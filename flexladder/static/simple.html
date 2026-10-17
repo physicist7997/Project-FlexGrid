@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FlexLadder · Simple demo</title>
+<title>FlexGrid · Simple demo</title>
 <style>
   :root{--g:#1b8a4b;--g2:#e3f4e9;--ink:#15201a;--mut:#64706a;--line:#e3e7e3;--dark:#141414;--amber:#b86e00;--bg:#f4f6f3}
   *{box-sizing:border-box}
@@ -86,24 +86,35 @@
   .hint{font-size:14px;color:var(--mut);margin-top:6px}
   .big.blue{background:linear-gradient(135deg,#2f6fd0,#2a9fd6);box-shadow:0 6px 18px rgba(47,111,208,.3)}
   h2 em{font-style:normal}
+  .deal{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px;align-items:stretch}
+  .party{border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px}
+  .party small{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--mut)}
+  .party>b{font-size:28px;line-height:1.15}.party span{font-size:14px;color:var(--mut)}.party span b{color:var(--ink)}
+  .party.util{background:#eef3fb;border:1px solid #c4d6f5}.party.fg{background:#f6f6f2;border:1px solid var(--line)}.party.home{background:var(--g2);border:1px solid #b9e2c7}
+  .party.home>b{color:var(--g)}
+  .arrow{align-self:center;font-size:26px;color:var(--mut)}
+  .alt .row{display:grid;grid-template-columns:220px 1fr 70px;gap:10px;align-items:center;margin:6px 0;font-size:14px}
+  .alt .bar2{height:18px;border-radius:6px;background:#9aa5a0}.alt .row.us .bar2{background:var(--g)}
+  .alt .row.us{font-weight:700}
+  .src{font-size:12px;color:var(--mut);margin:14px 0 0}
   footer{text-align:center;color:var(--mut);font-size:14px}
   footer a{color:var(--g);font-weight:700}
-  @media (max-width:760px){.vs,.modes{grid-template-columns:1fr}.timeline li{grid-template-columns:64px 30px 1fr}.timeline .mw{grid-column:3}}
+  @media (max-width:760px){.vs,.modes,.deal{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}.alt .row{grid-template-columns:1fr 60px}.alt .bar2{grid-column:1/-1}.timeline li{grid-template-columns:64px 30px 1fr}.timeline .mw{grid-column:3}}
 </style>
 </head>
 <body>
 <header>
-  <div><h1>⚡ FlexLadder</h1><p>When the grid is short on power, we dim thousands of homes a little, instead of switching neighborhoods off.</p></div>
+  <div><h1>⚡ FlexGrid</h1><p>When the grid is short on power, we dim thousands of homes a little, instead of switching neighborhoods off.</p></div>
   <nav class="nav"><a href="/homeowner" target="_blank">Homeowner app</a><a href="/" target="_blank">Operator console →</a></nav>
 </header>
 <div class="wrap">
 
   <section class="step">
     <h2><span>1</span>Build a neighborhood</h2>
-    <p class="sub">Every home gets its own random devices and the limits its owner set in the FlexLadder app. Simulated data.</p>
+    <p class="sub">Every home gets its own random devices and the limits its owner set in the FlexGrid app. Simulated data.</p>
     <div class="sliders">
       <div class="sl"><label>Homes <b id="vN"></b></label><input id="sN" type="range" min="1000" max="50000" step="1000" value="20000"></div>
-      <div class="sl"><label>Signed up for FlexLadder <b id="vE"></b></label><input id="sE" type="range" min="0" max="80" step="5" value="20"><small>Opt-in. This is an assumption: try a few values.</small></div>
+      <div class="sl"><label>Signed up for FlexGrid <b id="vE"></b></label><input id="sE" type="range" min="0" max="80" step="5" value="20"><small>Opt-in. This is an assumption: try a few values.</small></div>
       <div class="sl"><label>Homes with a battery <b id="vB"></b></label><input id="sB" type="range" min="0" max="15" step="0.5" value="2.5"><small>e.g. Base Power, managed by the battery company</small></div>
       <div class="sl"><label>Homes with an EV <b id="vV"></b></label><input id="sV" type="range" min="0" max="40" step="1" value="12"></div>
       <div class="sl"><label>AC homes with a smart thermostat <b id="vT"></b></label><input id="sT" type="range" min="0" max="90" step="5" value="40"></div>
@@ -131,11 +142,11 @@
       </button>
       <button class="mode on" data-mode="emergency">
         <span class="tag red">EMERGENCY</span><b>Load-shed backup</b>
-        <span>Local equipment is overloading. The utility needs power cut within 30 minutes or it starts switching neighborhoods off. FlexLadder covers what it can and says plainly what's left.</span>
+        <span>Local equipment is overloading. The utility needs power cut within 30 minutes or it starts switching neighborhoods off. FlexGrid covers what it can and says plainly what's left.</span>
       </button>
     </div>
     <div class="story" id="storyE">
-      It's a <b>104°F September evening</b> in the San Fernando Valley. At <b>6:00 PM</b> a substation is overloading.
+      A <b>September heat storm</b>, like Sept 8, 2024, when an overloaded LADWP distributing station forced 30–60 minute rotating outages. At <b>6:00 PM</b> a Valley substation is overloading.
       The utility calls: <b>cut <input id="need" type="number" step="0.1" min="0.1"> MW within 30 minutes</b> and hold it for
       <select id="dur"><option value="1">1 hour</option><option value="2">2 hours</option><option value="3" selected>3 hours</option></select>,
       or they start switching whole neighborhoods off.
@@ -152,7 +163,7 @@
   </section>
 
   <section class="step hidden" id="s3">
-    <h2><span>3</span>What FlexLadder did, minute by minute</h2>
+    <h2><span>3</span>What FlexGrid did, minute by minute</h2>
     <p class="sub">The planner picks the least disruptive devices first; this list is in the order they respond (batteries in about a minute, thermostats in about five). It only uses devices whose owners signed up, that are reporting and running right now, and only within the owner's limits.</p>
     <ul class="timeline" id="timeline"></ul>
     <div class="progress"><div id="pbar"></div><span id="ptxt"></span></div>
@@ -161,16 +172,16 @@
   </section>
 
   <section class="step hidden" id="s4">
-    <h2><span>4</span><em id="vsTitle">Old way vs FlexLadder</em></h2>
+    <h2><span>4</span><em id="vsTitle">Old way vs FlexGrid</em></h2>
     <p class="sub">Same <b id="vsNeed"></b> MW, same neighborhood.</p>
     <div class="vs hidden" id="vsRoutine">
       <div class="side old">
-        <h3>Without FlexLadder</h3>
+        <h3>Without FlexGrid</h3>
         <div class="n" style="color:#ffb35c" id="rOldN"></div><div>MWh bought at peak prices</div>
         <p style="font-size:14px;opacity:.85">The utility covers the peak by buying or generating extra power when it costs the most. Homes that could have helped aren't asked, and aren't paid.</p>
       </div>
       <div class="side new">
-        <h3>With FlexLadder</h3>
+        <h3>With FlexGrid</h3>
         <div class="n" id="rNewN"></div><div>MWh trimmed by homes, 0 homes switched off</div>
         <p style="font-size:14px" id="rNewTxt"></p>
       </div>
@@ -181,10 +192,10 @@
         <div class="n" id="oldN"></div><div>homes completely dark</div>
         <div class="grid" id="gOld"></div>
         <div class="legend" id="oldLeg"></div>
-        <p style="font-size:14px;opacity:.85">Everything off: AC in 104°F heat, fridges, Wi-Fi, medical devices. The utility picks circuits off a list; it can't see who needs power most.</p>
+        <p style="font-size:14px;opacity:.85">Everything off: AC in extreme heat, fridges, Wi-Fi, medical devices. The utility picks circuits off a list; it can't see who needs power most.</p>
       </div>
       <div class="side new">
-        <h3>✅ FlexLadder: everyone gives a little</h3>
+        <h3>✅ FlexGrid: everyone gives a little</h3>
         <div class="n" id="newN"></div><div>homes completely dark</div>
         <div class="grid" id="gNew"></div>
         <div class="legend" id="newLeg"></div>
@@ -203,11 +214,11 @@
 
   <section class="step hidden" id="s5">
     <h2><span>5</span>Over the next hours, honestly</h2>
-    <p class="sub">FlexLadder re-plans every 15 minutes. Thermostat savings fade as homes warm up, and water heaters and pool pumps can only wait so long, so it reports what it can really deliver.</p>
+    <p class="sub">FlexGrid re-plans every 15 minutes. Thermostat savings fade as homes warm up, and water heaters and pool pumps can only wait so long, so it reports what it can really deliver.</p>
     <div class="hours" id="hours"></div>
     <div id="hourNote"></div>
     <h3 style="margin:18px 0 4px">Throw a curveball</h3>
-    <p class="sub">Something breaks mid-event. FlexLadder re-plans instantly with what's still working.</p>
+    <p class="sub">Something breaks mid-event. FlexGrid re-plans instantly with what's still working.</p>
     <div class="curve">
       <button class="btn" data-f="comms_outage">📡 Cell tower outage in a neighborhood</button>
       <button class="btn" data-f="battery_api">🔋 Battery company's system goes down</button>
@@ -215,6 +226,24 @@
       <button class="btn" data-f="hotter">🔥 It gets hotter: +2 MW needed</button>
     </div>
     <div id="curveNote"></div>
+  </section>
+
+  <section class="step hidden" id="s6">
+    <h2><span>6</span>The deal: who pays, who earns</h2>
+    <p class="sub">One yearly contract pays for both jobs. It's priced on <b id="dVkw"></b> of <b>verified</b> flexibility: the least FlexGrid held at any point in this event, so the utility only pays for what it can count on.</p>
+    <div class="deal">
+      <div class="party util"><small>UTILITY PAYS</small><b id="dContract"></b><span id="dUtil"></span></div>
+      <div class="arrow">→</div>
+      <div class="party fg"><small>FLEXGRID KEEPS (40%)</small><b id="dFg"></b><span>Software, device connections, telemetry, operations and customer support.</span></div>
+      <div class="arrow">→</div>
+      <div class="party home"><small>HOMEOWNERS &amp; BATTERY PARTNERS GET (60%)</small><b id="dHome"></b><span id="dHomeTxt"></span></div>
+    </div>
+    <h3 style="margin:18px 0 6px">What one dependable kW of local relief costs the utility per year</h3>
+    <div class="alt" id="dAlt"></div>
+    <div id="dEm"></div>
+    <p class="src">Sources: utility alternatives are net costs from Brattle, <i>Real Reliability: The Value of Virtual Power</i> (2023), Technical Appendix Table 4 (gas peaker $41.4M/yr and utility battery $27.5M/yr for 400 MW; avoided transmission + distribution $15 + $35/kW-yr).
+      Outage cost: Brattle, <i>Value of Lost Load Study for the ERCOT Region</i> (2024), residential 1-hour $3,964/MWh. Homeowner comparison: LADWP Power Savers 2026 terms.
+      The $100/kW-yr price and the 60/40 split are FlexGrid's proposal, not a signed rate.</p>
   </section>
 
   <footer>Simulated homes and devices; all rates and shares are labeled assumptions. <a href="/" target="_blank">Open the full operator console</a> for the map, every home, search, more failure modes and the planner trace.</footer>
@@ -227,7 +256,8 @@ const f1 = (x, d = 1) => Number(x).toLocaleString(undefined, {minimumFractionDig
 async function api(p, o) { const r = await fetch(p, o); if (!r.ok) throw new Error(await r.text()); return r.json(); }
 const post = (p, b) => api(p, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(b || {})});
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-let DS = null, PEAK = 0, P = null, MODE = "emergency";
+let DS = null, PEAK = 0, P = null, MODE = "emergency", ECON = null;
+api("/api/templates").then(t => ECON = t.economics);
 
 /* The two jobs. Same engine; only the request differs. */
 const JOBS = {
@@ -263,7 +293,7 @@ function setMode(m) {
   document.querySelectorAll(".mode").forEach(b => b.classList.toggle("on", b.dataset.mode === m));
   $("#storyE").classList.toggle("hidden", m !== "emergency"); $("#storyR").classList.toggle("hidden", m !== "routine");
   $("#go").textContent = J().btn; $("#go").classList.toggle("blue", m === "routine");
-  ["#s3", "#s4", "#s5"].forEach(s => $(s).classList.add("hidden"));
+  ["#s3", "#s4", "#s5", "#s6"].forEach(s => $(s).classList.add("hidden"));
 }
 document.querySelectorAll(".mode").forEach(b => b.onclick = () => setMode(b.dataset.mode));
 
@@ -272,7 +302,7 @@ async function generate(seed = null) {
   P = await post("/api/dataset", {seed, n_homes: +$("#sN").value, enrollment: +$("#sE").value / 100, battery_share: +$("#sB").value / 100,
     ev_share: +$("#sV").value / 100, thermostat_share: +$("#sT").value / 100});
   await setup(); $("#gen").textContent = "🏘 Generate neighborhood"; $("#gen").disabled = false;
-  ["#s3", "#s4", "#s5"].forEach(s => $(s).classList.add("hidden"));
+  ["#s3", "#s4", "#s5", "#s6"].forEach(s => $(s).classList.add("hidden"));
 }
 async function setup() {
   await post("/api/failures/reset");
@@ -315,22 +345,22 @@ async function run(animated = true, curveText = "") {
   if (short <= 0.05)
     end.innerHTML = `<span class="t">${clock(10)}</span><span class="i">✅</span><span><b>Target met.</b> ${em ? "No neighborhood switched off." : "Nobody's power was switched off."}</span><span></span>`;
   else if (em)
-    end.innerHTML = `<span class="t">${clock(15)}</span><span class="i">👤</span><span><b>Still ${f1(short, 2)} MW short.</b> FlexLadder says so plainly. The utility's backup plan switches off <b>${I.flex_open.length} circuit${I.flex_open.length > 1 ? "s" : ""}</b> (${I.flex_open.map(f => m[f].name).join(", ")}, ${f0(I.dark_flex)} homes) instead of ${I.old_open.length}. A human operator approves it.</span><span></span>`;
+    end.innerHTML = `<span class="t">${clock(15)}</span><span class="i">👤</span><span><b>Still ${f1(short, 2)} MW short.</b> FlexGrid says so plainly. The utility's backup plan switches off <b>${I.flex_open.length} circuit${I.flex_open.length > 1 ? "s" : ""}</b> (${I.flex_open.map(f => m[f].name).join(", ")}, ${f0(I.dark_flex)} homes) instead of ${I.old_open.length}. A human operator approves it.</span><span></span>`;
   else
     end.innerHTML = `<span class="t">${clock(15)}</span><span class="i">📋</span><span><b>${f1(short, 2)} MW short.</b> Reported to the utility, which buys the rest as it normally would. Routine events never switch anyone off.</span><span></span>`;
   tl.appendChild(end); await sleep(50); end.classList.add("on");
-  const pct = Math.round(100 * (1 - short / need)), pay = P.summary.payout_usd;
+  const pct = Math.round(100 * (1 - short / need));
   $("#verdict").innerHTML = curveText + (em
     ? (short > 0.05
       ? `<div class="warn">Covered ${pct}% with flexibility. ${f0(I.dark_flex)} homes still lose power, versus ${f0(I.dark_old)} the old way.</div>`
       : `<div class="ok">✅ All ${f1(need)} MW covered by ${f0(I.participants)} homes each giving a little. 0 homes dark, versus ${f0(I.dark_old)} the old way.</div>`)
     : `<div class="ok">${short > 0.05 ? `Covered ${pct}% of the peak event.` : `✅ All ${f1(need)} MW covered by ${f0(I.participants)} homes.`}
-        Homeowners earn about $${f0(pay)} in bill credits over the event (illustrative $1/kWh). 0 homes switched off.</div>`);
+        Each participating home earns about $${f0(P.summary.per_home_usd_yr)} a year under the utility contract (step 6). 0 homes switched off.</div>`);
   const card = (ic, nn, l, mwv) => `<div class="card"><div style="font-size:24px">${ic}</div><div class="n">${f0(nn)}</div><div class="l">${l}</div><div class="m">${f1(mwv, 2)} MW</div></div>`;
   $("#cards").innerHTML = [card("🔋", n("battery"), "batteries discharged", mw("battery")), card("🚗", n("ev"), "EV chargers paused", mw("ev")),
     card("🌡", n("thermostat"), "thermostats nudged", mw("thermostat")), card("🚿", n("water_heater"), "water heaters delayed", mw("water_heater")),
     card("🏊", n("pool"), "pool pumps paused", mw("pool")), card("🏥", n("tier2_site"), "critical sites trimmed", mw("tier2_site"))].join("");
-  renderVs(I); renderHours();
+  renderVs(I); renderHours(); renderDeal();
 }
 function homeGrid(el, total, dark, help) {
   const cells = 200, per = total / cells, d = Math.round(dark / per), h = Math.round(help / per);
@@ -341,15 +371,15 @@ function renderVs(I) {
   const em = MODE === "emergency";
   $("#s4").classList.remove("hidden");
   $("#vsNeed").textContent = f1(I.target_kw / 1000);
-  $("#vsTitle").textContent = em ? "Old way vs FlexLadder" : "Without vs with FlexLadder";
+  $("#vsTitle").textContent = em ? "Old way vs FlexGrid" : "Without vs with FlexGrid";
   $("#vsEmergency").classList.toggle("hidden", !em); $("#vsRoutine").classList.toggle("hidden", em);
   const avg = I.planned_kw / Math.max(1, I.participants);
   const like = avg < 1.3 ? "about one microwave" : avg < 2 ? "about one hair dryer" : avg < 3.5 ? "about a space heater" : "less than one EV charger";
   if (!em) {
     const needMWh = I.target_kw / 1000 * P.request.duration_h, got = P.summary.mwh;
     $("#rOldN").textContent = f1(needMWh); $("#rNewN").textContent = f1(got);
-    $("#rNewTxt").innerHTML = `<b>${f0(P.summary.participants)} homes</b> helped, each about <b>${f1(avg, 1)} kW</b> on average (${like}). They earn about
-      <b>$${f0(P.summary.payout_usd)}</b> in bill credits (illustrative $1/kWh)${got < needMWh - 0.05 ? `; the other ${f1(needMWh - got)} MWh is bought as usual` : ""}.`;
+    $("#rNewTxt").innerHTML = `<b>${f0(P.summary.participants)} homes</b> helped, each about <b>${f1(avg, 1)} kW</b> on average (${like}). Each earns about
+      <b>$${f0(P.summary.per_home_usd_yr)} a year</b> under the utility contract (step 6)${got < needMWh - 0.05 ? `; the other ${f1(needMWh - got)} MWh is bought as usual` : ""}.`;
     return;
   }
   $("#oldN").textContent = f0(I.dark_old); $("#newN").textContent = f0(I.dark_flex);
@@ -375,8 +405,26 @@ function renderHours() {
       <b>${f1(h.got)} / ${f1(h.need)} MW</b><small>${h.label} · ${em ? `${f0(h.dark)} dark (old way ${f0(h.old)})` : "0 switched off"}</small></div>`).join("");
   const last = hrs[hrs.length - 1];
   $("#hourNote").innerHTML = last.got < last.need - 0.05
-    ? `<div class="note">By ${last.label} FlexLadder can still guarantee ${f1(last.got)} MW. It tells the ${em ? "operator" : "utility"} now, so they can plan, instead of promising watts it can't deliver. Dashed outline = what's needed.</div>`
+    ? `<div class="note">By ${last.label} FlexGrid can still guarantee ${f1(last.got)} MW. It tells the ${em ? "operator" : "utility"} now, so they can plan, instead of promising watts it can't deliver. Dashed outline = what's needed.</div>`
     : `<div class="ok">Covered for the whole event. Dashed outline = what's needed.</div>`;
+}
+
+function renderDeal() {
+  if (!ECON) return;
+  const s = P.summary, E = ECON, money = x => "$" + f0(x), mwTxt = x => x >= 1000 ? f1(x / 1000, 2) + " MW" : f0(x) + " kW";
+  $("#s6").classList.remove("hidden");
+  $("#dVkw").textContent = mwTxt(s.verified_kw);
+  $("#dContract").textContent = money(s.contract_usd_yr) + "/yr";
+  $("#dUtil").innerHTML = `$${E.contract_per_kw_yr} per verified kW-year. Its alternative costs about ${money(s.utility_alt_usd_yr)}/yr, so it <b>saves ${money(s.utility_savings_usd_yr)} a year</b>.`;
+  $("#dFg").textContent = money(s.flexgrid_usd_yr) + "/yr";
+  $("#dHome").textContent = money(s.homeowner_pool_usd_yr) + "/yr";
+  $("#dHomeTxt").innerHTML = `About <b>${money(s.per_home_usd_yr)} a year</b> per participating home (${f0(s.participants)} homes), on top of any savings on their bill. For comparison, LADWP's thermostat program pays $55 to join plus $40–90 a year.`;
+  const rows = [["New gas peaker + local upgrades", E.peaker_net_per_kw_yr + E.td_deferral_per_kw_yr], ["Utility-scale battery + local upgrades", E.battery_alt_per_kw_yr + E.td_deferral_per_kw_yr],
+    ["FlexGrid contract", E.contract_per_kw_yr, "us"]], max = Math.max(...rows.map(r => r[1]));
+  $("#dAlt").innerHTML = rows.map(([l, v, c]) => `<div class="row ${c || ""}"><span>${l}</span><div class="bar2" style="width:${100 * v / max}%"></div><span>$${v}</span></div>`).join("")
+    + `<p class="sub" style="margin:4px 0 0;font-size:13px">A utility-scale battery sits on the transmission system, so it can't relieve an overloaded neighborhood substation. Homes on that substation can, which is why local upgrades are counted for the alternatives.</p>`;
+  $("#dEm").innerHTML = MODE === "emergency" && s.home_hours_old > s.home_hours_flex
+    ? `<div class="ok">Plus, tonight alone: ${f0(s.home_hours_old - s.home_hours_flex)} home-hours of outage avoided, worth about ${money(s.voll_avoided_usd)} to those households (Brattle residential outage cost).</div>` : "";
 }
 
 /* ---------------------------------------------------------------- curveballs: compare the whole event, not just the first interval */

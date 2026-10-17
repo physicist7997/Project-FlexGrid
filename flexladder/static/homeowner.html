@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FlexLadder · My Home</title>
+<title>FlexGrid · My Home</title>
 <style>
   :root{--g:#1b8a4b;--ink:#16201b;--mut:#6b766f;--line:#e3e7e3}
   *{box-sizing:border-box}
@@ -45,7 +45,7 @@
 </head>
 <body>
 <div class="phone">
-  <div class="top"><h1>⚡ FlexLadder · My Home</h1><div id="addr">loading…</div></div>
+  <div class="top"><h1>⚡ FlexGrid · My Home</h1><div id="addr">loading…</div></div>
   <div class="body" id="app"></div>
 </div>
 <div class="side">
@@ -63,7 +63,8 @@
 </div>
 <script>
 const $ = s => document.querySelector(s);
-let H = null, PLAN = null;
+let H = null, PLAN = null, ECON = null;
+api("/api/templates").then(t => ECON = t.economics).catch(() => {});
 const hr = h => { const H_ = Math.floor(h), M = Math.round((h - H_) * 60); return `${(H_ - 1) % 12 + 1}:${String(M).padStart(2,"0")} ${H_ < 12 ? "AM" : "PM"}`; };
 async function api(p, o) { const r = await fetch(p, o); if (!r.ok) throw new Error(await r.text()); return r.json(); }
 function sw(id, on, dis) { return `<label class="sw"><input type="checkbox" id="${id}" ${on ? "checked" : ""} ${dis ? "disabled" : ""}><span></span></label>`; }
@@ -88,15 +89,17 @@ function smsText() {
   if (acts.some(a => a.startsWith("Pause pool"))) parts.push("pause your pool pump");
   const what = parts.length ? parts.join(", ") : "not need anything from your home this time";
   if (H.language === "Spanish")
-    return `FlexLadder: Alta demanda eléctrica hoy ${hr(req.start_hour)}–${hr(end)}. Vamos a ${parts.length ? "ajustar algunos aparatos dentro de sus límites" : "no necesitar nada de su casa"}. Su refrigerador y equipo médico nunca se tocan. Responda SKIP para omitir este evento.`;
-  return `FlexLadder: High grid demand ${hr(req.start_hour)}–${hr(end)} today. We'll ${what}. ${H.medical ? "Fridge, lights, medical equipment and cooling" : "Fridge and lights"} are never touched. Reply SKIP to sit out this event.`;
+    return `FlexGrid: Alta demanda eléctrica hoy ${hr(req.start_hour)}–${hr(end)}. Vamos a ${parts.length ? "ajustar algunos aparatos dentro de sus límites" : "no necesitar nada de su casa"}. Su refrigerador y equipo médico nunca se tocan. Responda SKIP para omitir este evento.`;
+  return `FlexGrid: High grid demand ${hr(req.start_hour)}–${hr(end)} today. We'll ${what}. ${H.medical ? "Fridge, lights, medical equipment and cooling" : "Fridge and lights"} are never touched. Reply SKIP to sit out this event.`;
 }
 function render() {
   $("#addr").textContent = `${H.address} · ${H.neighborhood}`;
   const D = PLAN.request.duration_h, HRS = {"Pause EV charging": D, "Partner battery discharge": D,
     "Delay water heater": Math.min(D, 1), "Pause pool pump": Math.min(D, 2), "Thermostat nudge (+°F)": D * 0.6};
   const relief = H.relief_kw;
-  const kwh = H.actions.filter(a => a.status === "DISPATCHED").reduce((t, a) => t + a.kw * (HRS[a.action] || D), 0), earn = kwh * 1.0;
+  const kwh = H.actions.filter(a => a.status === "DISPATCHED").reduce((t, a) => t + a.kw * (HRS[a.action] || D), 0);
+  const rate = ECON ? Math.round(ECON.contract_per_kw_yr * ECON.homeowner_share) : 60, earn = relief * rate;
+  const bat = H.actions.some(a => a.status === "DISPATCHED" && a.action.startsWith("Partner battery"));
   let html = `<div class="card"><h3>Flex Rewards ${sw("enrolled", H.enrolled)}</h3>
     <div class="q">Help your neighborhood avoid blackouts and earn bill credits. You stay in control and can skip any event.</div></div>`;
   if (H.medical) html += `<div class="prot">⚕ ${H.medical_device} registered. Your cooling and medical equipment are <b>always protected</b>.</div><br>`;
@@ -121,7 +124,8 @@ function render() {
       Alerts <select id="notify">${opt(["SMS","Email"], H.notify)}</select></div></div>`;
   html += `<div class="card"><h3>Tonight's event</h3><div class="sms">${smsText()}</div>
     <div class="muted">Your expected contribution: <b>${relief} kW</b> now, about <b>${kwh.toFixed(1)} kWh</b> over the event (each device only within your limits)</div>
-    <div class="money">≈ $${earn.toFixed(2)}</div><div class="muted">Illustrative at $1/kWh. Actual rates are set by your program and paid only for verified participation.</div></div>`;
+    ${relief > 0 ? `<div class="money">≈ $${Math.round(earn)} a year</div>` : `<div class="money" style="font-size:18px">$${rate} a year per kW you provide</div>`}
+    <div class="muted">${relief > 0 ? `Your share of the utility contract: $${rate} per kW you reliably provide, paid as a yearly bill credit.` : "Tonight's event didn't need your home. You still count as available capacity."}${bat ? " The battery part is paid through your battery company." : ""} Proposed program terms; final rates are set in the utility contract.</div></div>`;
   html += `<button class="save" id="save">Save my settings</button><div id="saved" class="muted" style="text-align:center;margin-top:6px"></div>`;
   $("#app").innerHTML = html;
   document.querySelectorAll("#reserveSeg button,#modeSeg button").forEach(b => b.onclick = () => {
@@ -165,14 +169,14 @@ function devices() {
   const d = [];
   if (H.tstat_brand !== "none") d.push(["tstat", "🌡", `${H.tstat_brand} thermostat`, `Sign in with ${H.tstat_brand}`]);
   if (H.ev) d.push(["ev", "🚗", H.ev_model, "Connect your car's account"]);
-  if (H.battery) d.push(["battery", "🔋", `Home battery (${H.battery_kwh} kWh)`, "Your battery company stays in control; FlexLadder only asks"]);
+  if (H.battery) d.push(["battery", "🔋", `Home battery (${H.battery_kwh} kWh)`, "Your battery company stays in control; FlexGrid only asks"]);
   if (H.wh_kw > 0) d.push(["wh", "🚿", "Electric water heater", "Needs a smart controller"]);
   if (H.pool_pump) d.push(["pool", "🏊", "Pool pump", "Needs a smart plug or timer"]);
   return d;
 }
 function renderSignup() {
   const s = SU.step, dots = `<div class="dots">${[0,1,2,3].map(i => `<i class="${i <= s ? "on" : ""}"></i>`).join("")}</div>`;
-  $("#addr").textContent = "Join FlexLadder";
+  $("#addr").textContent = "Join FlexGrid";
   let html = "";
   if (s === 0) html = `<h2>Keep your neighborhood's power on, and get paid for helping</h2>
     <ul><li>We only adjust devices you connect, and only within limits you set.</li>
@@ -200,7 +204,7 @@ function renderSignup() {
       <span class="muted">now ${H.setpoint_f}°F</span></div></div>`;
     if (SU.conn.battery) c += `<div class="card"><h3>🔋 Backup reserve to always keep</h3><div class="seg" id="suRes">${[20,40,60].map(v => `<button data-v="${v}" class="${v == L.battery_reserve_pct ? "on" : ""}">${v}%</button>`).join("")}</div></div>`;
     if (!c) c = `<div class="card muted">No device limits to set. You'll get event texts only.</div>`;
-    html = `<h2>Set your limits</h2><p class="muted">FlexLadder never goes past these. You can change them any time.</p>${c}
+    html = `<h2>Set your limits</h2><p class="muted">FlexGrid never goes past these. You can change them any time.</p>${c}
       <div class="card"><h3>Event texts</h3><div class="row">Language <select id="l_language">${opt(LANGS, L.language)}</select>
         Alerts <select id="l_notify">${opt(["SMS","Email"], L.notify)}</select></div></div>
       <button class="save" id="suNext">Review</button><button class="back" id="suBack">← Back</button>`;
@@ -210,8 +214,8 @@ function renderSignup() {
     html = `<h2>Ready to join</h2><div class="card"><div><b>${H.address}</b></div>
       <div class="muted">${on.length ? "Connected: " + on.join(", ") : "No devices connected (texts only)"}${SU.medical ? " · cooling never adjusted" : ""}</div></div>
       <div class="q">Before an event you'd get a text like this:</div>
-      <div class="sms">FlexLadder: High grid demand 5:00–7:00 PM tomorrow. We'll make small changes within your limits. Fridge and lights are never touched. Reply SKIP to sit out this event.</div>
-      <button class="save" id="suJoin">Join FlexLadder</button><button class="back" id="suBack">← Back</button>`;
+      <div class="sms">FlexGrid: High grid demand 5:00–7:00 PM tomorrow. We'll make small changes within your limits. Fridge and lights are never touched. Reply SKIP to sit out this event.</div>
+      <button class="save" id="suJoin">Join FlexGrid</button><button class="back" id="suBack">← Back</button>`;
   }
   if (s === 4) html = `<h2>✓ You're in</h2><p>Your home is now part of the operator's plan, within your limits.</p>
       <div class="card"><h3>Tonight's event</h3><div class="muted">${H.relief_kw > 0

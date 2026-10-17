@@ -1,7 +1,7 @@
-"""Synthetic but realistic district of homes for FlexLadder.
+"""Synthetic but realistic district of homes for FlexGrid.
 
 Every home gets its own random physical parameters (loads, devices, battery size, EV, ...)
-AND the settings a homeowner would have entered in the FlexLadder homeowner app
+AND the settings a homeowner would have entered in the FlexGrid homeowner app
 (enrolled devices, comfort ceiling, EV departure + minimum charge, battery reserve,
 never-touch list, preference mode, language, notification channel).
 

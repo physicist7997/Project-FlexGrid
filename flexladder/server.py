@@ -1,4 +1,4 @@
-"""FlexLadder API + static dashboard.  Run:  uvicorn server:app --reload   then open http://localhost:8000
+"""FlexGrid API + static dashboard.  Run:  uvicorn server:app --reload   then open http://localhost:8000
 
 Single-user demo server: the district, failures and last plan live in memory.
 """
@@ -20,7 +20,7 @@ import config as C
 from dataset import build_district, polygons
 from planner import ACTIONS, LABEL, Failures, Request, explain_home, fmt_clock, plan
 
-app = FastAPI(title="FlexLadder")
+app = FastAPI(title="FlexGrid")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 S: dict = {}
@@ -118,7 +118,7 @@ def geo():
 
 @app.get("/api/templates")
 def templates():
-    return {"templates": C.TEMPLATES, "default": C.DEFAULT_TEMPLATE,
+    return {"templates": C.TEMPLATES, "default": C.DEFAULT_TEMPLATE, "economics": C.ECONOMICS,
             "neighborhoods": list(S["d"]["feeders"]["neighborhood"].unique()),
             "brands": ["ecobee", "Google Nest", "Honeywell Home"]}
 
@@ -383,4 +383,4 @@ def export(k: int = 0):
     out.to_csv(buf, index=False)
     buf.seek(0)
     return StreamingResponse(iter([buf.getvalue()]), media_type="text/csv",
-                             headers={"Content-Disposition": f"attachment; filename=flexladder_dispatch_{k}.csv"})
+                             headers={"Content-Disposition": f"attachment; filename=flexgrid_dispatch_{k}.csv"})

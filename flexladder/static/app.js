@@ -1,4 +1,4 @@
-/* FlexLadder operator console */
+/* FlexGrid operator console */
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const LABEL = {ev:"Pause EV charging", pool:"Pause pool pump", water_heater:"Delay water heater",
@@ -180,7 +180,7 @@ function homeHtml(r) {
     <div class="grid"><div><span>Load</span> ${r.load_now_kw} kW</div><div><span>Giving</span> <b>${r.relief_kw} kW</b></div>
       <div><span>Telemetry</span> ${r.telemetry_age_s}s ago (${r.comms})</div><div><span>Events this season</span> ${r.events_this_season}</div></div>
     <div class="sec">Devices</div><div class="grid">${dev.join("")}</div>
-    <div class="sec">Homeowner settings (from the FlexLadder app)</div><div class="grid">${prefs}</div>
+    <div class="sec">Homeowner settings (from the FlexGrid app)</div><div class="grid">${prefs}</div>
     <div class="sec">Dispatch decision</div><table>${acts}</table>
     <div style="margin-top:6px"><a href="/homeowner?home=${r.home_id}" target="_blank">Open in homeowner app ↗</a></div></div>`;
 }
@@ -197,8 +197,8 @@ function renderKPIs() {
   const value = em
     ? card("Outage avoided", `${f0(s.home_hours_old - s.home_hours_flex)} home-h`, `≈ $${f0(s.voll_avoided_usd)} lost-load value (Brattle residential)`, "good")
     : (P.request.label.includes("4CP")
-      ? card("4CP value / yr", `$${f0(s.min_mw * 40)}k–$${f0(s.min_mw * 76)}k`, "if this hour is one of the 4 peaks", "good")
-      : card("Paid to participants", `$${f0(s.payout_usd)}`, "at $1/kWh (ELRP residential, illustrative)", "good"));
+      ? card("4CP value / yr", `≈ $${f0(s.min_mw * 67)}k`, "at ~$67/kW-yr ERCOT avg transmission, if this hour is a 4CP peak", "good")
+      : card("Contract value / yr", `$${f0(s.contract_usd_yr)}`, `$${f0(s.homeowner_pool_usd_yr)} to homes (≈ $${f0(s.per_home_usd_yr)} each) · utility saves $${f0(s.utility_savings_usd_yr)}`, "good"));
   $("#kpis").innerHTML = [
     card("Needed", `${f1(I.target_kw / 1000)} MW`, `${em ? "EMERGENCY" : "ROUTINE"} · ${P.request.duration_h} h · respond ≤ ${P.request.deadline_min} min`),
     card(`Relief @ ${I.label}`, `${f1(I.planned_kw / 1000, 2)} MW`, `first hour ${f1(s.first_mw)} · lowest ${f1(s.min_mw)} MW`, I.short_kw > 0 ? "" : "good"),
@@ -210,7 +210,15 @@ function renderKPIs() {
     value,
   ].join("");
 }
+function failChip() {
+  return P.failures.length ? `<span class="failchip">⚠ Active failures: ${P.failures.join(" · ")} <button class="btn small" data-reset="1">Reset</button></span>` : "";
+}
 function renderBanner() {
+  renderBannerBody();
+  if (P.failures.length) { const b = $("#banner"); b.insertAdjacentHTML("afterbegin", failChip()); b.classList.add("warn"); b.classList.remove("ok"); }
+  $$("#banner [data-reset]").forEach(x => x.onclick = async () => { P = await post("/api/failures/reset"); renderAll(); toast("Failures cleared"); });
+}
+function renderBannerBody() {
   const I = IV(), b = $("#banner"), em = P.summary.kind === "emergency", m = META();
   if (VIEW === "old" && em) {
     b.className = "banner warn";
@@ -288,7 +296,8 @@ async function runPlan() {
 }
 function renderDispatchTable() {
   const I = IV();
-  const rows = ORDER.map(a => `<tr><td><span style="color:${COLORS[a]}">■</span> ${LABEL[a]}</td><td>${f1((I.by_action[a] || 0) / 1000, 2)} MW</td><td>${f0(I.count_by_action[a] || 0)}</td></tr>`).join("");
+  const why = {battery: P.failures.find(f => /battery/i.test(f)), thermostat: P.failures.find(f => /thermostat cloud/i.test(f))};
+  const rows = ORDER.map(a => `<tr><td><span style="color:${COLORS[a]}">■</span> ${LABEL[a]}${!(I.by_action[a] > 0) && why[a] ? `<div class="failnote">⚠ ${why[a]} (injected failure)</div>` : ""}</td><td>${f1((I.by_action[a] || 0) / 1000, 2)} MW</td><td>${f0(I.count_by_action[a] || 0)}</td></tr>`).join("");
   $("#dispatchTable").innerHTML = `<table><tr><th>Action (least disruptive first)</th><th>Relief</th><th># devices</th></tr>${rows}
     <tr><td><b>Total</b></td><td><b>${f1(I.planned_kw / 1000, 2)} MW</b></td><td></td></tr>
     <tr><td>Needed</td><td>${f1(I.target_kw / 1000, 2)} MW</td><td></td></tr></table>`;

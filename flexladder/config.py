@@ -92,9 +92,8 @@ SCENARIOS = {
         "start_hour": 17,
         "duration_h": 2.0,
         "notice": "Day-ahead notice by ~3 PM; window 4-9 PM",
-        "story": "California calls paid peak events ~7-16 times a summer. The same tool trims them "
-                 "and pays participants, so it is already in place on the bad night.",
-        "payout_per_kwh": 1.0,   # ELRP residential track $1/kWh (non-residential $2/kWh)
+        "story": "Paid peak events are called on hot afternoons (PG&E's 2022 residential ELRP had 10 event days). "
+                 "The same tool trims them, so it is already in place on the bad night.",
     },
     "la_heat_storm": {
         "label": "Heat storm: Valley substation overload, must drop 12 MW 6-9 PM",
@@ -106,7 +105,6 @@ SCENARIOS = {
         "notice": "Forecast at ~2 PM; utility's fallback is opening feeder blocks",
         "story": "Like LADWP's Sept 2024 heat storm: overloaded local cables/transformers. "
                  "Local constraint -> local flexibility directly avoids local feeder cuts.",
-        "payout_per_kwh": 1.0,
     },
     "tx_4cp": {
         "label": "Texas co-op 4CP peak alert (where Base operates today)",
@@ -116,8 +114,7 @@ SCENARIOS = {
         "start_hour": 16,
         "duration_h": 2.0,
         "notice": "Same-day or day-ahead alert; one of four summer peaks sets transmission costs",
-        "story": "Co-ops pay roughly $40k-$76k per MW-year based on the four summer peak intervals.",
-        "payout_per_kwh": 0.0,
+        "story": "Transmission costs (~$67/kW-yr ERCOT average, Brattle for PUCT) are allocated by the four summer peaks.",
     },
 }
 DEFAULT_SCENARIO = "la_heat_storm"
@@ -128,14 +125,14 @@ TEMPLATES = {
     "normal_tuesday": {
         "label": "Normal Tuesday: LA hot-weekday peak event",
         "kind": "routine", "target_mw": 6.0, "start_hour": 17.0, "duration_h": 2.0, "deadline_min": 60, "area": [],
-        "why": "California calls paid peak events (DSGS/ELRP-style) ~7-16 times a summer with day-ahead notice. "
+        "why": "Paid peak events are called on hot afternoons with day-ahead notice (PG&E's 2022 residential program had 10 event days). "
                "Routine events never open breakers; shortfall is just reported.",
     },
     "crisis_heat_storm": {
         "label": "Crisis: heat-storm substation overload (Valley)",
         "kind": "emergency", "target_mw": 12.0, "start_hour": 18.0, "duration_h": 3.0, "deadline_min": 30, "area": [],
         "why": "Like LADWP's Sept 2024 heat storm: overloaded local equipment. The utility's fallback is opening "
-               "feeders from its rotation list; FlexLadder works first so fewer open.",
+               "feeders from its rotation list; FlexGrid works first so fewer open.",
     },
     "fast_10min": {
         "label": "Fast emergency call: 10-minute response (ERS/ECRS-style)",
@@ -151,7 +148,23 @@ TEMPLATES = {
     "tx_4cp": {
         "label": "Texas co-op 4CP peak alert (Base's market today)",
         "kind": "routine", "target_mw": 8.0, "start_hour": 16.0, "duration_h": 2.0, "deadline_min": 60, "area": [],
-        "why": "Texas co-ops pay ~$40k-$76k per MW-year set by four summer peak intervals.",
+        "why": "Texas transmission costs (~$67/kW-yr ERCOT average, Brattle for PUCT; verify before quoting) are allocated by the four summer peak intervals.",
     },
 }
 DEFAULT_TEMPLATE = "crisis_heat_storm"
+
+# ---------------------------------------------------------------- the deal (business model)
+# Utility pays FlexGrid per kW of VERIFIED flexibility per year (verified = the lowest 15-min relief FlexGrid
+# guarantees through the event). Priced below what the utility otherwise spends on the same dependable kW.
+# Sources: Brattle, "Real Reliability: The Value of Virtual Power" (2023), Technical Appendix Table 4 (2022$,
+# 400 MW of resource adequacy): net cost gas peaker $41.40M/yr, utility battery $27.47M/yr, residential VPP
+# $17.14M/yr; avoided T&D assumption $15 transmission + $35 distribution per kW-yr.
+ECONOMICS = {
+    "contract_per_kw_yr": 100,      # OUR proposed price to the utility (assumption)
+    "homeowner_share": 0.60,        # share passed to homeowners / battery partners (assumption)
+    "peaker_net_per_kw_yr": 104,    # Brattle 2023: $41.40M / 400 MW
+    "td_deferral_per_kw_yr": 50,    # Brattle 2023 assumption: $15 T + $35 D
+    "battery_alt_per_kw_yr": 69,    # Brattle 2023: $27.47M / 400 MW
+    "vpp_cost_per_kw_yr": 43,       # Brattle 2023: $17.14M / 400 MW (typical residential VPP, net)
+    # For comparison only (homeowner side): LADWP Power Savers 2026 = $55 card + $40-90/yr per thermostat.
+}

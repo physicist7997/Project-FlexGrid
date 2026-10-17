@@ -1,4 +1,4 @@
-"""FlexLadder planner: turns an operator request into an exact, home-by-home dispatch plan.
+"""FlexGrid planner: turns an operator request into an exact, home-by-home dispatch plan.
 
 Per 15-minute interval:
   1. State      - which devices are actually running right now (AC, EV charging, water heater, pool)
@@ -321,7 +321,17 @@ def plan(d: dict, req: Request, fl: Failures) -> dict:
         "kind": req.kind,
     }
     summ["voll_avoided_usd"] = summ["unserved_mwh_avoided"] * VOLL_RES
-    summ["payout_usd"] = summ["mwh"] * 1000 * 1.0
+    # The deal (reporting only; allocation above is untouched). Annual contract on VERIFIED kW =
+    # the lowest relief FlexGrid holds through the event. Rates and sources in config.ECONOMICS.
+    E = C.ECONOMICS
+    vkw = min(summ["min_mw"], summ["target_mw"]) * 1000
+    summ["verified_kw"] = vkw
+    summ["contract_usd_yr"] = vkw * E["contract_per_kw_yr"]
+    summ["homeowner_pool_usd_yr"] = summ["contract_usd_yr"] * E["homeowner_share"]
+    summ["flexgrid_usd_yr"] = summ["contract_usd_yr"] - summ["homeowner_pool_usd_yr"]
+    summ["utility_alt_usd_yr"] = vkw * (E["peaker_net_per_kw_yr"] + E["td_deferral_per_kw_yr"])
+    summ["utility_savings_usd_yr"] = summ["utility_alt_usd_yr"] - summ["contract_usd_yr"]
+    summ["per_home_usd_yr"] = summ["homeowner_pool_usd_yr"] / max(1, summ["participants"])
     trace = trace0 + _trace_tail(intervals, summ, req) + [
         {"step": "Done", "detail": f"Planned {steps} intervals in {1000 * (time.perf_counter() - t0):.0f} ms."}]
     return {"request": asdict(req), "failures": fl.active(), "summary": summ, "intervals": intervals, "trace": trace}

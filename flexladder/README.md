@@ -1,9 +1,9 @@
-# FlexLadder — shed watts, not homes
+# FlexGrid — shed watts, not homes
 
 A reliability-aware flexibility dispatcher. An operator (utility / co-op / VPP / battery-fleet desk) enters a
-realistic request — MW or kW, start, duration, response deadline, area — and FlexLadder builds an exact,
+realistic request — MW or kW, start, duration, response deadline, area — and FlexGrid builds an exact,
 home-by-home dispatch plan from 50,000 synthetic homes, each with its own devices and the limits its homeowner
-set in the FlexLadder homeowner app. Every feeder pays its share in small slices of flexibility first; any
+set in the FlexGrid homeowner app. Every feeder pays its share in small slices of flexibility first; any
 honest shortfall goes to the utility's normal feeder rotation list, and the operator decides.
 
 **Simulation only. No live grid, device, or battery controls. All homes and addresses are synthetic.**
@@ -27,7 +27,7 @@ background map tiles need a connection (the map still works without them).
 2. **The crisis**: 104°F evening, substation overload, "cut X MW within 30 min for N hours" (defaults to ~6% of the neighborhood's load).
 3. **⚡ REQUEST LOAD-SHED BACKUP** → minute-by-minute walkthrough: batteries → EV chargers paused → pool pumps → water heaters →
    thermostats → critical sites, each with counts and MW, a progress bar, and an honest shortfall line.
-4. **Old way vs FlexLadder**: homes completely dark, side by side, with a grid where each square is a block of homes.
+4. **Old way vs FlexGrid**: homes completely dark, side by side, with a grid where each square is a block of homes.
 5. **Next hours + curveballs**: relief per hour vs need; inject a cell outage / battery-company outage / skip wave / extra heat and watch it re-plan.
 
 Demo tip: run once at 20% signed up (partial coverage, fewer homes dark), then slide to 40–50% and run again (0 homes dark).
@@ -37,7 +37,7 @@ Demo tip: run once at 20% signed up (partial coverage, fewer homes dark), then s
 | Area | What it does |
 |---|---|
 | **Map** | District → click a neighborhood → its 4 feeder subsectors → click a feeder → every house as a dot (dispatched / enrolled / not reporting / not enrolled / medical / breaker open). Click a house for its full record: devices, battery size and charge, EV, thermostat, the homeowner's settings, and *why* each action was or wasn't used. 🎲 buttons pick a random (dispatched) house. Critical sites shown with icons. |
-| **FlexLadder / Old way toggle** | Same request, rotation list only: which feeders go fully dark. |
+| **FlexGrid / Old way toggle** | Same request, rotation list only: which feeders go fully dark. |
 | **Time slider + chart** | Relief by action over the event vs the target; thermostat relief decays, water heaters and pools hit their limits, batteries are energy-limited. |
 | **Dispatch tab** | Templates: Normal Tuesday (LA peak event), Crisis heat-storm overload, 10-minute emergency call, local North Hollywood overload, Texas 4CP. Or a custom request in MW or kW → **Find resources**. Per-action breakdown + CSV export of the exact dispatch list. |
 | **Database tab** | Search homes by ID/address, filter (enrolled, dispatched, silent, battery, EV, thermostat, pool, medical); feeder table with load, share, flexibility, status. Click any row to fly there. |
@@ -48,7 +48,8 @@ Demo tip: run once at 20% signed up (partial coverage, fewer homes dark), then s
 ## Homeowner app (`/homeowner`)
 Phone-style page for one home: Flex Rewards opt-in, per-device toggles and the one question that matters
 (EV ready-by time and minimum charge, comfort ceiling, battery backup reserve), preference mode, never-touch list,
-language and alert channel, tonight's SMS preview (English/Spanish) and an illustrative earnings estimate.
+language and alert channel, tonight's SMS preview (English/Spanish) and the home's yearly credit under the utility contract.
+`/homeowner?signup=1` walks a not-yet-enrolled home through sign-up (find home, connect devices, set limits, join).
 **Save** updates the shared dataset and recomputes the operator's plan; the house popup shows the new settings.
 
 ## Planner rules (planner.py)
@@ -66,5 +67,13 @@ language and alert channel, tonight's SMS preview (English/Spanish) and an illus
 ## Files
 `config.py` assumptions + templates · `dataset.py` synthetic district and homeowner settings · `planner.py` engine ·
 `server.py` API · `static/` console, homeowner app, vendored libraries · `tests/` safety tests.
+
+## Business model (the deal)
+The utility signs a yearly capacity contract with FlexGrid: **$100 per verified kW-year** (verified = the lowest
+15-minute relief FlexGrid holds through an event). Its alternative for a dependable kW of *local* relief is about
+$154/kW-yr (new gas peaker ~$104 net + avoided local T&D ~$50; Brattle, *Real Reliability*, 2023, Technical Appendix
+Table 4), so it saves ~35%. FlexGrid passes **60%** to homeowners and battery partners as yearly bill credits and keeps
+40% for software and operations. One contract covers both jobs: everyday peak events and emergency backup.
+The $100 price and 60/40 split are our proposal (`config.ECONOMICS`), not a signed rate.
 
 All device penetrations, confidences and incentive rates are illustrative assumptions; sources are noted in `config.py`.

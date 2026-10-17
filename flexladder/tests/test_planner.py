@@ -78,3 +78,10 @@ def test_more_enrollment_more_relief():
     lo = plan(build_district(enrollment=0.1), req("crisis_heat_storm"), Failures())["summary"]["first_mw"]
     hi = plan(build_district(enrollment=0.4), req("crisis_heat_storm"), Failures())["summary"]["first_mw"]
     assert hi > lo
+
+
+def test_deal_adds_up_and_utility_saves():
+    s = plan(D, req("crisis_heat_storm"), Failures())["summary"]
+    assert s["verified_kw"] > 0
+    assert abs(s["homeowner_pool_usd_yr"] + s["flexgrid_usd_yr"] - s["contract_usd_yr"]) < 1e-6
+    assert s["utility_savings_usd_yr"] >= 0 and s["per_home_usd_yr"] > 0

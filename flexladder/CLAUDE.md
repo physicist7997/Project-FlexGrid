@@ -1,4 +1,4 @@
-# FlexLadder — project context for Claude Code
+# FlexGrid — project context for Claude Code
 
 ## What this is
 Hackathon project for the InnovateLA Dual-Use Hackathon (USC, Oct 16–18 2026), Energy & Grid track sponsored by
@@ -8,7 +8,7 @@ technical execution, feasibility & impact, adapting to twists, demo/pitch. Base 
 deployable by utility/city/homeowner, homes or outage-hours protected, saves money daily and keeps power on in outages.
 
 **Idea: "shed watts, not homes."** When a utility must cut X MW fast, today it opens whole feeder breakers
-(~800–2,000 homes each) from a rotation list. FlexLadder spreads the cut thinly across many opted-in homes and sites:
+(~800–2,000 homes each) from a rotation list. FlexGrid spreads the cut thinly across many opted-in homes and sites:
 partner batteries, EV charging pauses, pool pumps, water-heater delays, thermostat nudges, critical-site Tier-2 loads —
 least disruptive first, within each homeowner's limits — and honestly reports any shortfall, which goes to the
 utility's normal rotation list for a human to approve. Same engine runs ordinary peak events (dual use).
@@ -39,7 +39,7 @@ Leaflet + Chart.js are vendored in `static/vendor/` (offline-safe). Only the Ope
   /api/homes?feeder=, /api/home/{id}, /api/random_home, /api/search, /api/feeders, /api/homeowner/{id} (GET/POST),
   /api/export.csv. `_clean()` makes responses JSON-safe (NaN → None, numpy → python).
 - `static/simple.html` — 5-step story page (build neighborhood → crisis → big REQUEST LOAD-SHED BACKUP button →
-  minute-by-minute actions with counts/MW → old way vs FlexLadder grids → hourly bars + curveballs).
+  minute-by-minute actions with counts/MW → old way vs FlexGrid grids → hourly bars + curveballs).
 - `static/index.html`, `app.js`, `style.css` — operator console. `static/homeowner.html` — phone-style homeowner app.
 - `tests/test_planner.py` — safety/honesty invariants.
 
@@ -50,10 +50,10 @@ Leaflet + Chart.js are vendored in `static/vendor/` (offline-safe). Only the Ope
   committed to the utility's own contract (Base/utility contracts keep dispatch control); comfort ceiling; water heater
   ≤ 60 min; pool ≤ 2 h; medical homes' HVAC never touched; never-touch lists; critical-site Tier 0 untouched.
 - Routine requests never open breakers. Emergency fallback never opens critical or relay-reserved feeders.
-- FlexLadder works BEFORE / ALONGSIDE a mandatory shed order; it never delays one (ERCOT: each shed block within
+- FlexGrid works BEFORE / ALONGSIDE a mandatory shed order; it never delays one (ERCOT: each shed block within
   30 minutes). Crisis framing = local capacity emergency (e.g., LADWP Sept 2024 heat storm overloads), where local
   flexibility directly avoids local feeder cuts.
-- Base is a partner/channel: FlexLadder *requests* battery capacity through the fleet operator, never commands it.
+- Base is a partner/channel: FlexGrid *requests* battery capacity through the fleet operator, never commands it.
 - Keep numbers realistic and labeled as assumptions; don't add unsourced statistics to UI or docs.
 
 ## Current state (Sat ~1:30 PM)
@@ -77,6 +77,12 @@ honestly. Simple demo default (20k homes, 5 MW): ~67% covered at 20% enrolled; 0
    responsible-use note (2 lines: outage/occupancy data could reveal empty homes or be used to deprioritize customers
    → verdicts stay in the operator console, external sharing feeder-level only, medical flags opt-in, a human approves
    every breaker action).
+
+## Economics (sourced, Oct 17)
+`config.ECONOMICS`: $100/verified kW-yr contract, 60% to homeowners/battery partners. Alternatives: peaker $104 + T&D $50
+(Brattle 2023, Tech Appendix Table 4). Residential VOLL $3,964/MWh (Brattle 2024 ERCOT). CA residential ELRP ($1/kWh)
+ended after 2025, so never cite it as current. LADWP Power Savers 2026: $55 + $40–90/yr. Planner adds reporting-only
+summary fields (`verified_kw`, `contract_usd_yr`, `per_home_usd_yr`, ...). Shown in /simple step 6.
 
 ## Gotchas
 - Simple page and console share one server state; `/simple` regenerates the dataset (seed 42) on load.
