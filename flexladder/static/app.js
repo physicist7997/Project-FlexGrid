@@ -206,7 +206,7 @@ function renderKPIs() {
     em ? card("Homes dark at peak", `${f0(s.peak_dark_flex)}`, `old way: ${f0(s.peak_dark_old)}`, s.peak_dark_flex < s.peak_dark_old ? "good" : "bad")
        : card("Breakers opened", "0", "routine events never cut power", "good"),
     card("Homes contributing", `${f0(Object.entries(I.count_by_action).filter(([a]) => a !== "tier2_site").reduce((x, [, c]) => x + c, 0))}`,
-      `${f0(s.participants)} over the event · avg ${f1(I.planned_kw / Math.max(1, s.participants), 2)} kW`),
+      `${f0(s.participants)} over the event · avg ${f1((I.planned_kw - (I.by_action.tier2_site || 0)) / Math.max(1, I.participants), 2)} kW per home now`),
     value,
   ].join("");
 }
