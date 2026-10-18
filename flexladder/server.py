@@ -128,7 +128,7 @@ def geo():
 
 @app.get("/api/templates")
 def templates():
-    return {"templates": C.TEMPLATES, "default": C.DEFAULT_TEMPLATE, "economics": C.ECONOMICS,
+    return {"templates": C.TEMPLATES, "default": C.DEFAULT_TEMPLATE, "economics": C.ECONOMICS, "base_homes": C.N_HOMES,
             "neighborhoods": list(S["d"]["feeders"]["neighborhood"].unique()),
             "brands": ["ecobee", "Google Nest", "Honeywell Home"]}
 

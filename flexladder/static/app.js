@@ -266,13 +266,21 @@ function renderChart() {
 }
 
 /* ---------------------------------------------------------------- dispatch tab */
+// Templates are written for the base district (TPL.base_homes). Scale the MW to the district actually loaded,
+// so a "Normal Tuesday" asks the same share of this neighborhood's load whatever its size.
+function tpl(k) {
+  const t = TPL.templates[k], f = P.dataset.homes / (TPL.base_homes || P.dataset.homes);
+  if (Math.abs(f - 1) < 1e-9) return t;
+  const mw = Math.max(0.1, Math.round(t.target_mw * f * 10) / 10);
+  return {...t, target_mw: mw, why: `${t.why || ""} Scaled from ${t.target_mw} MW (written for ${f0(TPL.base_homes)} homes) to ${mw} MW for this ${f0(P.dataset.homes)}-home district.`.trim()};
+}
 function renderTemplates() {
-  $("#templates").innerHTML = Object.entries(TPL.templates).map(([k, t]) =>
+  $("#templates").innerHTML = Object.keys(TPL.templates).map(k => [k, tpl(k)]).map(([k, t]) =>
     `<button data-k="${k}" class="${k === activeTpl ? "on" : ""}"><b>${t.label}</b><span>${t.target_mw} MW · ${hr(t.start_hour)} · ${t.duration_h} h · ≤${t.deadline_min} min · ${t.kind}${t.area.length ? " · " + t.area.join(", ") : ""}</span></button>`).join("")
     + `<button data-k="custom" class="${activeTpl === "custom" ? "on" : ""}"><b>Custom dispatch</b><span>Edit the request below and press Find resources</span></button>`;
   $$("#templates button").forEach(b => b.onclick = () => {
     if (b.dataset.k === "custom") { activeTpl = "custom"; $("#reqForm [name=label]").value = "Custom dispatch"; renderTemplates(); $("#tplWhy").textContent = ""; return; }
-    activeTpl = b.dataset.k; fillForm(TPL.templates[activeTpl]); renderTemplates(); runPlan();
+    activeTpl = b.dataset.k; fillForm(tpl(activeTpl)); renderTemplates(); runPlan();
   });
 }
 function fillForm(t) {
@@ -392,6 +400,7 @@ let dsKey = null;
 function syncDatasetControls() {
   const d = P.dataset, key = `${d.seed}|${d.homes}|${d.enrolled}`;
   if (key === dsKey) return; dsKey = key;
+  if (TPL) renderTemplates();
   const pct = Math.round(d.enrollment * 100);
   $("#dsN").value = d.homes; $("#dsE").value = pct;
   $("#sN").value = Math.min(100000, d.homes); $("#sE").value = pct;
@@ -419,7 +428,7 @@ async function init() {
   TPL.neighborhoods.forEach(n => { $("#qNb").insertAdjacentHTML("beforeend", `<option>${n}</option>`); $("#fNb").insertAdjacentHTML("beforeend", `<option>${n}</option>`); });
   TPL.brands.forEach(b => $("#fBrand").insertAdjacentHTML("beforeend", `<option>${b}</option>`));
   activeTpl = Object.keys(TPL.templates).find(k => TPL.templates[k].label === P.request.label) || "custom";
-  fillForm(activeTpl !== "custom" ? TPL.templates[activeTpl] : P.request);
+  fillForm(activeTpl !== "custom" ? tpl(activeTpl) : P.request);
   renderTemplates();
   F.onsubmit = e => { e.preventDefault(); activeTpl = "custom"; renderTemplates(); runPlan(); };
   $$(".tabs button").forEach(b => b.onclick = () => {
