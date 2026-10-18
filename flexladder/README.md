@@ -46,7 +46,7 @@ Demo tip: run once at 20% signed up (partial coverage, fewer homes dark), then s
 | **Banner decisions** | When short: approve feeder fallback / ask battery partner to lower reserve / send voluntary conservation text — logged to the trace. |
 
 ## Homeowner app (`/homeowner`)
-Phone-style page for one home: Flex Rewards opt-in, per-device toggles and the one question that matters
+Phone-style page for one home: the program on/off switch, per-device toggles and the one question that matters
 (EV ready-by time and minimum charge, comfort ceiling, battery backup reserve), preference mode, never-touch list,
 language and alert channel, tonight's SMS preview (English/Spanish) and the home's yearly credit under the utility contract.
 `/homeowner?signup=1` walks a not-yet-enrolled home through sign-up (find home, connect devices, set limits, join).

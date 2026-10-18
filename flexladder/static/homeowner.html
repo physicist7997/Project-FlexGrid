@@ -55,6 +55,7 @@
       <button onclick="load(document.getElementById('hid').value)">Open</button></div>
     <div class="row" style="margin-top:6px">
       <button onclick="rand(false)">🎲 Random home</button><button onclick="rand(true)">🎲 Random dispatched home</button></div>
+    <div id="note" class="prot" style="display:none;margin-top:6px"></div>
     <div class="row" style="margin-top:6px"><button onclick="startSignup()">📱 New homeowner: sign-up flow</button></div>
     <p class="muted">Changes saved here flow straight into the operator console: the plan is recomputed with this homeowner's new limits.</p>
     <a href="/simple">Simple demo</a> · <a href="/" target="_blank">Operator console ↗</a>
@@ -70,10 +71,15 @@ async function api(p, o) { const r = await fetch(p, o); if (!r.ok) throw new Err
 function sw(id, on, dis) { return `<label class="sw"><input type="checkbox" id="${id}" ${on ? "checked" : ""} ${dis ? "disabled" : ""}><span></span></label>`; }
 function opt(vals, cur, fmt = x => x) { return vals.map(v => `<option value="${v}" ${String(v) === String(cur) ? "selected" : ""}>${fmt(v)}</option>`).join(""); }
 
-async function rand(d) { const r = await api(`/api/random_home?dispatched=${d}`); load(r.id); }
+async function rand(d) {
+  try { const r = await api(`/api/random_home?dispatched=${d}`); load(r.id); }
+  catch (e) { note(d ? "No home is helping in the current event. Try a random home." : "No homes found."); }
+}
+function note(t) { $("#note").textContent = t; $("#note").style.display = t ? "" : "none"; }
 async function load(id) {
   if (!id) return;
-  try { H = await api(`/api/homeowner/${id}`); } catch (e) { alert("Home not found"); return; }
+  try { H = await api(`/api/homeowner/${id}`); } catch (e) { note(`No home with ID "${id}". Try one like H00268, or a random home.`); return; }
+  note("");
   PLAN = await api("/api/plan");
   history.replaceState(null, "", `/homeowner?home=${H.home_id}`);
   $("#hid").value = H.home_id; render();
@@ -100,8 +106,8 @@ function render() {
   const kwh = H.actions.filter(a => a.status === "DISPATCHED").reduce((t, a) => t + a.kw * (HRS[a.action] || D), 0);
   const rate = ECON ? Math.round(ECON.contract_per_kw_yr * ECON.homeowner_share) : 60, earn = relief * rate;
   const bat = H.actions.some(a => a.status === "DISPATCHED" && a.action.startsWith("Partner battery"));
-  let html = `<div class="card"><h3>Flex Rewards ${sw("enrolled", H.enrolled)}</h3>
-    <div class="q">Help your neighborhood avoid blackouts and earn bill credits. You stay in control and can skip any event.</div></div>`;
+  let html = `<div class="card"><h3>I'm in the FlexGrid program ${sw("enrolled", H.enrolled)}</h3>
+    <div class="q">The master switch. On: FlexGrid may use the devices you turn on below, only within your limits, and you earn a yearly bill credit. Off: none of your devices are ever used. You can skip any single event by replying SKIP.</div></div>`;
   if (H.medical) html += `<div class="prot">⚕ ${H.medical_device} registered. Your cooling and medical equipment are <b>always protected</b>.</div><br>`;
   if (H.ev) html += `<div class="card"><h3>🚗 ${H.ev_model} ${sw("enroll_ev", H.enroll_ev)}</h3>
     <div class="q">When do you need to leave, and how much charge do you need?</div>
@@ -125,7 +131,7 @@ function render() {
   html += `<div class="card"><h3>Tonight's event</h3><div class="sms">${smsText()}</div>
     <div class="muted">Your expected contribution: <b>${relief} kW</b> now, about <b>${kwh.toFixed(1)} kWh</b> over the event (each device only within your limits)</div>
     ${relief > 0 ? `<div class="money">≈ $${Math.round(earn)} a year</div>` : `<div class="money" style="font-size:18px">$${rate} a year per kW you provide</div>`}
-    <div class="muted">${relief > 0 ? `Your share of the utility contract: $${rate} per kW you reliably provide, paid as a yearly bill credit.` : "Tonight's event didn't need your home. You still count as available capacity."}${bat ? " The battery part is paid through your battery company." : ""} Proposed program terms; final rates are set in the utility contract.</div></div>`;
+    <div class="muted">${relief > 0 ? `${relief} kW (what your home gives tonight) × $${rate} per kW per year, paid as a yearly bill credit. Homes with a battery or a charging EV give more kW and earn more.` : "Tonight's event didn't need your home. You still count as available capacity."}${bat ? " The battery part is paid through your battery company." : ""} Proposed program terms; final rates are set in the utility contract.</div></div>`;
   html += `<button class="save" id="save">Save my settings</button><div id="saved" class="muted" style="text-align:center;margin-top:6px"></div>`;
   $("#app").innerHTML = html;
   document.querySelectorAll("#reserveSeg button,#modeSeg button").forEach(b => b.onclick = () => {
@@ -154,7 +160,7 @@ async function startSignup() {
   // prefer a home with a couple of connectable devices so the flow has something to show
   for (let tries = 0; tries < 12; tries++) {
     let r;
-    try { r = await api("/api/random_home?enrolled=false"); } catch (e) { alert("Every home in this dataset is already signed up."); return; }
+    try { r = await api("/api/random_home?enrolled=false"); } catch (e) { note("Every home in this dataset is already signed up."); return; }
     H = await api(`/api/homeowner/${r.id}`);
     if (devices().length >= 2) break;
   }

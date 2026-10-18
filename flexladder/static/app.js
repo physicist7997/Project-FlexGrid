@@ -161,7 +161,7 @@ function homeHtml(r) {
   if (r.solar_kw) dev.push(`<div><span>Solar</span> ${r.solar_kw} kW</div>`);
   if (r.medical) dev.push(`<div style="color:#d23c3c"><span>Medical</span> ${r.medical_device} (protected)</div>`);
   const prefs = [
-    `<div><span>Flex Rewards (appliances)</span> ${yn(r.enrolled)}</div>`, `<div><span>Mode</span> ${r.mode}</div>`,
+    `<div><span>In FlexGrid program</span> ${yn(r.enrolled)}</div>`, `<div><span>Mode</span> ${r.mode}</div>`,
     r.ev ? `<div><span>EV enrolled</span> ${yn(r.enroll_ev)}</div>` : "",
     r.ev ? `<div><span>EV ready by</span> ${hr(r.ev_depart_hour)} · ≥${r.ev_min_charge_pct}%</div>` : "",
     r.tstat_brand !== "none" ? `<div><span>Thermostat enrolled</span> ${yn(r.enroll_thermostat)}</div>` : "",
@@ -386,6 +386,19 @@ function initSim() {
   };
 }
 
+// Both dataset controls (Customize panel, Failures tab) always show the dataset actually loaded.
+// Only re-sync when the dataset changes, so moving the time slider never wipes half-edited sliders.
+let dsKey = null;
+function syncDatasetControls() {
+  const d = P.dataset, key = `${d.seed}|${d.homes}|${d.enrolled}`;
+  if (key === dsKey) return; dsKey = key;
+  const pct = Math.round(d.enrollment * 100);
+  $("#dsN").value = d.homes; $("#dsE").value = pct;
+  $("#sN").value = Math.min(100000, d.homes); $("#sE").value = pct;
+  $("#sB").value = Math.round(1000 * d.batteries / d.homes) / 10; $("#sV").value = Math.round(100 * d.evs / d.homes);
+  ["#sN", "#sE", "#sB", "#sV"].forEach(id => $(id).oninput && $(id).oninput());
+}
+
 /* ---------------------------------------------------------------- orchestration */
 function setK(k) { K = k; renderAll(false); }
 function renderAll(full = true) {
@@ -393,6 +406,7 @@ function renderAll(full = true) {
   $("#tLabel").textContent = IV().label;
   $("#tInfo").textContent = `elapsed ${f1(IV().elapsed, 2)} h of ${P.request.duration_h} h · plan computed in ${P.ms} ms`;
   $("#dsChip").textContent = `${f0(P.dataset.homes)} homes · seed ${P.dataset.seed} · ${Math.round(P.dataset.enrollment * 100)}% enrolled`;
+  syncDatasetControls();
   renderKPIs(); renderBanner(); renderMap(); renderDispatchTable(); renderTrace();
   if (full) renderChart(); else if (chart) chart.update();
   if ($("#tab-db").classList.contains("on")) { $("#dbFeeders").style.display === "none" ? searchHomes() : renderFeederTable(); }
@@ -415,7 +429,6 @@ async function init() {
   });
   $("#tSlider").oninput = e => setK(+e.target.value);
   initMap(); initDb(); initFailures(); initSim();
-  $("#sN").value = Math.min(100000, P.dataset.homes); $("#sE").value = Math.round(P.dataset.enrollment * 100); $("#sN").oninput(); $("#sE").oninput();
   map.fitBounds(L.latLngBounds(GEO.neighborhoods.flatMap(n => n.bounds)), {padding: [10, 10]});
   renderAll();
 }
